@@ -1,4 +1,5 @@
-;; Package system
+;;; package --- Summary:
+;;; Code
 (when (>= emacs-major-version 24)
   (require 'package)
   (package-initialize)
@@ -32,13 +33,10 @@
 (setq inhibit-startup-message t) ;; hide the startup message
 (load-theme 'material t) ;; load material theme
 
+
 ;; line number present
 (global-linum-mode t)
-
-
-;; scheme
-(require 'xscheme)
-
+    
 
 ;; -*- mode: elisp -*-
 ;; Disable the splash screen (to enable it agin, replace the t with 0)
@@ -50,6 +48,11 @@
 ;; meta key from alt to cmd on Mac
  (setq mac-option-modifier 'super)
  (setq mac-command-modifier 'meta)
+
+(global-set-key (kbd "C-?") 'help-command)
+(global-set-key (kbd "C-h") 'delete-backward-char)
+(global-set-key (kbd "M-h") 'backward-kill-word)
+
 
 ;; Your path from shell needs to be seen by Emacs, and to make that easier, use the following elisp package.
 (add-to-list 'load-path "~/.emacs.d/lisp")
@@ -69,99 +72,11 @@
     (let ((shell-name (read-string "shell name: " nil)))
     (shell (concat "*" shell-name "*"))))
 
-;; -------
-;; eclipse
-(setq debug-on-error t)
-
-;; add emacs-eclim to integrate eclipse feature to emacs
-(add-to-list 'load-path "~/.emacs.d/lisp/emacs-eclim/")
-(require 'eclim)
-(setq eclimd-autostart t)
-
-(defun my-java-mode-hook ()
-  (eclim-mode t))
-(add-hook 'java-mode-hook 'my-java-mode-hook)
-
-(require 'eclimd)
-
-;; -----
-;; gherkin
-(require 'feature-mode)
-(add-to-list 'auto-mode-alist '("\.feature$" . feature-mode))
-(setq feature-default-language "fi")
-(setq feature-default-i18n-file "~/.emacs.d/lisp/cucumber.el/i18n.yml")
-
-(add-to-list 'load-path "~/.emacs.d/lisp/gherkin-mode")
-(require 'gherkin-mode)
-
-;; Eclipse installation
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(ansi-color-faces-vector
-   [default bold shadow italic underline bold bold-italic bold])
- '(custom-enabled-themes (quote (misterioso)))
- '(default-input-method "korean-hangul")
- '(eclim-eclipse-dirs
-   (quote
-    ("/Applications/Eclipse.app/Contents/MacOS/eclipse")))
- '(eclim-executable "~/eclipse/java-oxygen/Eclipse.app/Contents/Eclipse/eclim")
- '(fci-rule-color "#37474f")
- '(hl-sexp-background-color "#1c1f26")
- '(org-agenda-files
-   (quote
-    ("~/Dropbox/org/work.org" "~/Dropbox/org/school.org" "~/Dropbox/org/home.org")))
- '(org-modules
-   (quote
-    (org-bbdb org-bibtex org-docview org-gnus org-habit org-info org-irc org-mhe org-rmail org-w3m)))
- '(org-tag-alist nil)
- '(org-todo-keywords
-   (quote
-    ((sequence "CAPTURE(c)" "ACTIONABLE(a)" "INCUBATE(i)" "|" "DELEGATE(g)" "CANCELLED(x)")
-     (sequence "ORGANIZE(o)" "FOLLOWUP(f)" "REFLECT(r)")
-     (sequence "TODO(t)" "|" "DONE(d)"))))
- '(package-selected-packages
-   (quote
-    (indium json-mode use-package anaconda-mode yasnippet cl-lib s eclim meghanada feature-mode neotree material-theme better-defaults docker-compose-mode docker virtualenvwrapper auto-complete js2-mode web-mode php-mode eide list-packages-ext helm-dash flymake-jslint flymake-css flycheck web-beautify emmet-mode magit racket-mode org-pomodoro projectile org markdown-mode exec-path-from-shell company)))
- '(scheme-program-name "mit-scheme")
- '(vc-annotate-background nil)
- '(vc-annotate-color-map
-   (quote
-    ((20 . "#f36c60")
-     (40 . "#ff9800")
-     (60 . "#fff59d")
-     (80 . "#8bc34a")
-     (100 . "#81d4fa")
-     (120 . "#4dd0e1")
-     (140 . "#b39ddb")
-     (160 . "#f36c60")
-     (180 . "#ff9800")
-     (200 . "#fff59d")
-     (220 . "#8bc34a")
-     (240 . "#81d4fa")
-     (260 . "#4dd0e1")
-     (280 . "#b39ddb")
-     (300 . "#f36c60")
-     (320 . "#ff9800")
-     (340 . "#fff59d")
-     (360 . "#8bc34a"))))
- '(vc-annotate-very-old-color nil))
 
 ;; Displaying compilation error messages in the echo area
 (setq help-at-pt-display-when-idle t)
 (setq help-at-pt-timer-delay 0.1)
 (help-at-pt-set-timer)
-
-;; Configuring auto-complete-mode
-;; regular auto-complete initialization
-(require 'auto-complete-config)
-(ac-config-default)
-
-;; add the emacs-eclim source
-(require 'ac-emacs-eclim-source)
-(ac-emacs-eclim-config)
 
 ;;------------------------
 
@@ -237,264 +152,6 @@
 (global-set-key [C-S-right] 'shift-right)
 (global-set-key [C-S-left] 'shift-left)
 
-
-
-
-;; -------
-
-;;;;org-mode configuration
-;; Enable org-mode
-(require 'org)
-(add-to-list 'load-path "/Users/yhk/.emacs.d/lisp")
-
-;; (load "ob-julia.el")
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((R . t)
-   (emacs-lisp . t)
-   (python . t)
-;;   (julia . t)
-   ))
-
-(setq org-confirm-babel-evaluate nil)
-(add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
-(add-hook 'org-mode-hook 'org-display-inline-images)
-
-(setq org-babel-python-command "ipython --pylab=osx --pdb --nosep --classic --no-banner --no-confirm-exit")
-(setenv "PYTHONPATH"    "/usr/local/bin")
-
-(defun org-babel-python-strip-session-chars ()
-  "Remove >>> and ... from a Python session output."
-  (when (and (string=
-              "python"
-              (org-element-property :language (org-element-at-point)))
-             (string-match
-              ":session"
-              (org-element-property :parameters (org-element-at-point))))
-
-    (save-excursion
-      (when (org-babel-where-is-src-block-result)
-        (goto-char (org-babel-where-is-src-block-result))
-        (end-of-line 1)
-        ;(while (looking-at "[\n\r\t\f ]") (forward-char 1))
-        (while (re-search-forward
-                "\\(>>> \\|\\.\\.\\. \\|: $\\|: >>>$\\)"
-                (org-element-property :end (org-element-at-point))
-                t)
-          (replace-match "")
-          ;; this enables us to get rid of blank lines and blank : >>>
-          (beginning-of-line)
-          (when (looking-at "^$")
-            (kill-line)))))))
-
-(add-hook 'org-babel-after-execute-hook 'org-babel-python-strip-session-chars)
-
-
-;; The following lines are always needed.  Choose your own keys.
-(global-set-key "\C-cl" 'org-store-link)
-(global-set-key "\C-ca" 'org-agenda)
-(global-set-key "\C-cc" 'org-capture)
-(global-set-key (kbd "<f6>") 'org-capture)
-(global-set-key "\C-cb" 'org-iswitchb)
-
-(setq org-log-done t)
-(setq org-agenda-files (list "~/Dropbox/org/work.org"
-                             "~/Dropbox/org/school.org" 
-                             "~/Dropbox/org/home.org"))
-(setq org-default-notes-file (concat org-directory "/notes.org"))
-(setq org-capture-templates
-      '(
-	("a" "Appointment" entry (file+headline "~/Dropbox/org/gcal.org" "Calendar") "* APPT %^{Description} %^g
-%?
-Added: %U")
-        ("j" "Journal" entry (file+datetree "~/Dropbox/org/journal.org")
-	 "* %?\nEntered on %U\n  %i\n  %a")
-	("l" "Link" entry (file+headline "~/Dropbox/org/link.org" "Links")
-	 "* %? %^L %^g \n%T" :prepend t)
-	("d" "Diet" entry (file+datetree "~/Dropbox/org/diet.org")
-	 "* %?\nEntered on %U\n  %i\n  %a")))
-
-;; Make org-mode work with files ending in .org
-;; (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-;; The above is the default in recent emacsen
-(global-set-key (kbd "C-c o") 
-                (lambda () (interactive) (find-file "~/Dropbox/org/organizer.org")))
-
-
-(setq org-default-notes-file (concat org-directory "/notes.org"))
-
-;;;;org-mode configuration
-;; Enable org-mode
-(require 'org)
-;; Make org-mode work with files ending in .org
-;; (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-;; The above is the default in recent emacsen
-(global-set-key (kbd "C-c o") 
-                (lambda () (interactive) (find-file "~/Dropbox/org/organizer.org")))
-(global-set-key "\C-c l" 'org-store-link)
-(global-set-key "\C-c a" 'org-agenda)
-(setq org-default-notes-file (concat org-directory "/notes.org"))
-(define-key global-map "\C-c c" 'org-capture)
-(global-set-key "\C-c c" 'org-capture)
-(global-set-key (kbd "<f6>") 'org-capture)
-(global-set-key "\C-c b" 'org-iswitchb)
-(setq org-log-done t)
-(setq org-agenda-files (list "~/Dropbox/org/work.org"
-                             "~/Dropbox/org/school.org" 
-                             "~/Dropbox/org/home.org"))
-(setq org-default-notes-file (concat org-directory "/notes.org"))
-
-;; include entries from the Emacs diary into Org mode agenda
-(setq org-agenda-include-diary t)
-
-;; load markdown exporter automatically with org-mode
-(eval-after-load "org"
-  '(require 'ox-md nil t))
-
-;; archive done tasks
-(defun org-archive-done-tasks()
-  (interactive)
-  (org-map-entries
-   (lambda ()
-     (org-archive-subtree)
-     (setq org-ap-continue-from (outline-previous-heading)))
-  "/DONE" 'tree))
-
-;; archive all done tasks
-(defun org-archive-all-done-tasks ()
-  (interactive)
-  (org-map-entries 'org-archive-subtree "/DONE" 'file))
-(eval-after-load "org"
-  '(require 'ox-md nil t))
-
-;; change font for done task
-(setq org-fontify-done-headline t)
-
-;; ess
-(setq ess-smart-S-assign-key ":")
-(ess-toggle-S-assign nil)
-(ess-toggle-S-assign nil)
-(ess-toggle-underscore nil) ; leave underscore key alone!
-
-;; emacs-ide
-;; (eide-start)
-
-
-(projectile-global-mode)
-;; (add-hook 'ruby-mode-hook 'projectile-on)
-;; (require 'robe)
-;; (add-hook 'ruby-mode-hook 'robe-mode)
-
-;; ;; Configuring emacs for ruby
-;; (require 'flymake-ruby)
-;; (add-hook 'ruby-mode-hook 'flymake-ruby-load)
-;; (setq ruby-deep-indent-paren nil)
-;; (global-set-key (kbd "C-c r r") 'inf-ruby)
-
-(require 'ido)
-(ido-mode t)
-
-;; ruby shell inside emacs
-(global-set-key (kbd "C-c r r") 'inf-ruby)
-
-;; project management utilities
-(projectile-global-mode)
-;; (add-hook 'ruby-mode-hook 'projectile-on)
-
-;; code assistance tool 
-;; (require 'robe)
-;; (add-hook 'ruby-mode-hook 'robe-mode)
-
-;; 
-(global-company-mode t)
-;; (push 'company-robe company-backends)
-
-(require 'ido)
-(setq ido-enable-flex-matching t)
-(setq ido-everywhere t)
-(ido-mode 1)
-
- ;; Display ido results vertically, rather than horizontally
-  (setq ido-decorations (quote ("\n-> " "" "\n   " "\n   ..." "[" "]" " [No match]" " [Matched]" " [Not readable]" " [Too big]" " [Confirm]")))
-  (defun ido-disable-line-truncation () (set (make-local-variable 'truncate-lines) nil))
-  (add-hook 'ido-minibuffer-setup-hook 'ido-disable-line-truncation)
-  (defun ido-define-keys () ;; C-n/p is more intuitive in vertical layout
-    (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
-    (define-key ido-completion-map (kbd "C-p") 'ido-prev-match))
-  (add-hook 'ido-setup-hook 'ido-define-keys)
-;;
-(put 'upcase-region 'disabled nil)
-
-;; http://baohaojun.github.io/org-jira.html
-;; (add-to-list 'load-path "~/.emacs.d/org-jira/")
-;; (setq jiralib-url "https://fastcampus.atlassian.net/jira")
-;; (require 'org-jira)
-
-;; org trello
-;; (require 'org-install)
-;; (require 'org-trello)
-
-;; incomplete installation of mu4e
-;; the exact path may differ -- check it
-;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
-
-
-;; ------------------
-;; editing web templates
-
-(require 'web-mode)
-(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.jsx$" . web-mode))
-
-(require 'flycheck)
-
-
-;; turn on flychecking globally
-(add-hook 'after-init-hook #'global-flycheck-mode)
-
-;; disable jshint since we prefer eslint checking
-(setq-default flycheck-disabled-checkers
-  (append flycheck-disabled-checkers
-    '(javascript-jshint)))
-
-
-;; use eslint with web-mode for jsx files
-(flycheck-add-mode 'javascript-eslint 'web-mode)
-
-;; customize flycheck temp file prefix
-(setq-default flycheck-temp-prefix ".flycheck")
-
-;; disable json-jsonlist checking for json files
-(setq-default flycheck-disabled-checkers
-  (append flycheck-disabled-checkers
-    '(json-jsonlist)))
-
-;; https://github.com/purcell/exec-path-from-shell
-;; only need exec-path-from-shell on OSX
-;; this hopefully sets up path and other vars better
-(when (memq window-system '(mac ns))
-  (exec-path-from-shell-initialize))
-
-
-(defun my-web-mode-hook ()
-  "Hooks for Web mode."
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-css-indent-offset 2)
-  (setq web-mode-code-indent-offset 2)
-)
-(add-hook 'web-mode-hook  'my-web-mode-hook)
-
-;; for better jsx syntax-highlighting in web-mode
-;; - courtesy of Patrick @halbtuerke
-(defadvice web-mode-highlight-part (around tweak-jsx activate)
-  (if (equal web-mode-content-type "jsx")
-    (let ((web-mode-enable-part-face nil))
-      ad-do-it)
-    ad-do-it))
-
-(require 'emmet-mode)
-
-
 ;;----
 
 (defun indent-region-custom(numSpaces)
@@ -543,7 +200,76 @@ Added: %U")
 (global-set-key (kbd "<backtab>") 'untab-region)
 (global-set-key (kbd "<tab>") 'tab-region)
 
-;;----
+;; -------
+
+(projectile-global-mode)
+(global-company-mode t)
+
+(require 'ido)
+(setq ido-enable-flex-matching t)
+(setq ido-everywhere t)
+(ido-mode t)
+
+ ;; Display ido results vertically, rather than horizontally
+  (setq ido-decorations (quote ("\n-> " "" "\n   " "\n   ..." "[" "]" " [No match]" " [Matched]" " [Not readable]" " [Too big]" " [Confirm]")))
+  (defun ido-disable-line-truncation () (set (make-local-variable 'truncate-lines) nil))
+  (add-hook 'ido-minibuffer-setup-hook 'ido-disable-line-truncation)
+  (defun ido-define-keys () ;; C-n/p is more intuitive in vertical layout
+    (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
+    (define-key ido-completion-map (kbd "C-p") 'ido-prev-match))
+  (add-hook 'ido-setup-hook 'ido-define-keys)
+;;
+(put 'upcase-region 'disabled nil)
+
+(require 'web-mode)
+(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.jsx$" . web-mode))
+
+(require 'flycheck)
+
+;; turn on flychecking globally
+(add-hook 'after-init-hook #'global-flycheck-mode)
+
+;; disable jshint since we prefer eslint checking
+(setq-default flycheck-disabled-checkers
+  (append flycheck-disabled-checkers
+    '(javascript-jshint)))
+
+
+;; use eslint with web-mode for jsx files
+(flycheck-add-mode 'javascript-eslint 'web-mode)
+
+;; customize flycheck temp file prefix
+(setq-default flycheck-temp-prefix ".flycheck")
+
+;; disable json-jsonlist checking for json files
+(setq-default flycheck-disabled-checkers
+  (append flycheck-disabled-checkers
+    '(json-jsonlist)))
+
+;; https://github.com/purcell/exec-path-from-shell
+;; only need exec-path-from-shell on OSX
+;; this hopefully sets up path and other vars better
+(when (memq window-system '(mac ns))
+  (exec-path-from-shell-initialize))
+
+(defun my-web-mode-hook ()
+  "Hooks for Web mode."
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-code-indent-offset 2)
+)
+(add-hook 'web-mode-hook  'my-web-mode-hook)
+
+;; for better jsx syntax-highlighting in web-mode
+;; - courtesy of Patrick @halbtuerke
+(defadvice web-mode-highlight-part (around tweak-jsx activate)
+  (if (equal web-mode-content-type "jsx")
+    (let ((web-mode-enable-part-face nil))
+      ad-do-it)
+    ad-do-it))
+
+(require 'emmet-mode)
 
 (defun bs-web-mode-hook ()
   (local-set-key '[backtab] 'indent-relative)
@@ -566,19 +292,7 @@ Added: %U")
 
 (global-set-key [f5] 'toggle-php-flavor-mode)
 
-;; --------------------------------------------
-;; Virtualenv wrapper
-;; works with python.el, default on emacs 24.3 and up
-(require 'virtualenvwrapper)
-(venv-initialize-interactive-shells) ;; if you want interactive shell support
-(venv-initialize-eshell) ;; if you want eshell support
-;; note that setting `venv-location` is not necessary if you
-;; use the default location (`~/.virtualenvs`), or if the
-;; the environment variable `WORKON_HOME` points to the right place
 
-;; enable anaconda-mode
-(add-hook 'python-mode-hook 'anaconda-mode)
-(add-hook 'python-mode-hook 'anaconda-eldoc-mode)
 ;; ---------------------------------------------
  
 
@@ -589,18 +303,6 @@ Added: %U")
  ;; If there is more than one, they won't work right.
  '(org-done ((t (:foreground "PaleGreen" :weight normal :strike-through t))))
  '(org-headline-done ((t (:foreground "LightSalmon" :strike-through t)))))
-
-
-;; --------
-;; OSX/docker-machine configuration
-
-(setenv "PATH" (concat (getenv "PATH") ":/usr/local/bin"))
-(setq exec-path (append exec-path '("/usr/local/bin")))
-;; Use "docker-machine env box" command to find out your environment variables
-(setenv "DOCKER_TLS_VERIFY" "1")
-(setenv "DOCKER_HOST" "tcp://10.11.12.13:2376")
-(setenv "DOCKER_CERT_PATH" "/Users/foo/.docker/machine/machines/box")
-(setenv "DOCKER_MACHINE_NAME" "box")
 
 ;; -------
 ;; disable vc-mode so that git doesn't slow down Emacs opening
@@ -617,3 +319,295 @@ Added: %U")
 ;; When running 'projectile-switch-project' (C-c p p), 'neotree' will change root automatically.
 (setq projectile-switch-project-action 'neotree-projectile-action)
 
+
+(require 'ess-site)
+(add-to-list 'load-path "/opt/ess-17.11/lisp")
+(load "ess-site")
+(setq ess-smart-S-assign-key ":")
+(ess-toggle-S-assign nil)
+(ess-toggle-S-assign nil)
+(ess-toggle-underscore nil) ; leave underscore key alone!
+
+
+;;;;org-mode configuration
+;; Enable org-mode
+(require 'org)
+(add-to-list 'load-path "/home/yhk/.emacs.d/lisp")
+(setq org-directory "/home/yhk/Dropbox/org")
+(setq org-mobile-inbox-for-pull "/home/yhk/Dropbox/org/mobile.org")
+(setq org-mobile-directory "/home/yhk/Dropbox/Apps/MobileOrg")
+
+;; (load "ob-julia.el")
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((R . t)
+   (emacs-lisp . t)
+   (python . t)
+   ))
+
+(setq org-confirm-babel-evaluate nil)
+(add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
+(add-hook 'org-mode-hook 'org-display-inline-images)
+
+(setq org-log-done t)
+(setq org-agenda-files (list org-directory))
+(setq org-default-notes-file (concat org-directory "/notes.org"))
+(setq org-capture-templates
+      '(
+	("a" "Appointment" entry (file+headline "~/Dropbox/org/gcal.org" "Calendar") "* APPT %^{Description} %^g
+%?
+Added: %U")
+        ("j" "Journal" entry (file+datetree "~/Dropbox/org/journal.org")
+	 "* %?\nEntered on %U\n  %i\n  %a")
+	("l" "Link" entry (file+headline "~/Dropbox/org/link.org" "Links")
+	 "* %? %^L %^g \n%T" :prepend t)
+	("d" "Diet" entry (file+datetree "~/Dropbox/org/diet.org")
+	 "* %?\nEntered on %U\n  %i\n  %a")))
+;; The following lines are always needed.  Choose your own keys.
+(global-set-key "\C-cl" 'org-store-link)
+(global-set-key "\C-ca" 'org-agenda)
+(define-key global-map "\C-c c" 'org-capture)
+(global-set-key "\C-cc" 'org-capture)
+(global-set-key (kbd "<f6>") 'org-capture)
+(global-set-key "\C-cb" 'org-iswitchb)
+(global-set-key (kbd "C-c o") 
+                (lambda () (interactive) (find-file "~/Dropbox/org/organizer.org")))
+
+;; include entries from the Emacs diary into Org mode agenda
+(setq org-agenda-include-diary t)
+
+;; load markdown exporter automatically with org-mode
+(eval-after-load "org"
+  '(require 'ox-md nil t))
+
+;; archive done tasks
+(defun org-archive-done-tasks()
+  (interactive)
+  (org-map-entries
+   (lambda ()
+     (org-archive-subtree)
+     (setq org-ap-continue-from (outline-previous-heading)))
+   "/DONE" 'tree))
+
+;; archive all done tasks
+(defun org-archive-all-done-tasks ()
+  (interactive)
+  (org-map-entries 'org-archive-subtree "/DONE" 'file))
+(eval-after-load "org"
+  '(require 'ox-md nil t))
+
+;; ;; org-jira setting
+;; (setq jiralib-url "https://your-site.atlassian.net")
+;; (define-key org-jira-map (kbd "C-c pg") 'org-jira-get-projects)
+;; (define-key org-jira-map (kbd "C-c ib") 'org-jira-browse-issue)
+;; (define-key org-jira-map (kbd "C-c ig") 'org-jira-get-issues)
+;; (define-key org-jira-map (kbd "C-c ih") 'org-jira-get-issues-headonly)
+;; (define-key org-jira-map (kbd "C-c iu") 'org-jira-update-issue)
+;; (define-key org-jira-map (kbd "C-c iw") 'org-jira-progress-issue)
+;; (define-key org-jira-map (kbd "C-c in") 'org-jira-progress-issue-next)
+;; (define-key org-jira-map (kbd "C-c ia") 'org-jira-assign-issue)
+;; (define-key org-jira-map (kbd "C-c ir") 'org-jira-refresh-issue)
+;; (define-key org-jira-map (kbd "C-c iR") 'org-jira-refresh-issues-in-buffer)
+;; (define-key org-jira-map (kbd "C-c ic") 'org-jira-create-issue)
+;; (define-key org-jira-map (kbd "C-c ik") 'org-jira-copy-current-issue-key)
+;; (define-key org-jira-map (kbd "C-c sc") 'org-jira-create-subtask)
+;; (define-key org-jira-map (kbd "C-c sg") 'org-jira-get-subtasks)
+;; (define-key org-jira-map (kbd "C-c cu") 'org-jira-update-comment)
+;; (define-key org-jira-map (kbd "C-c wu") 'org-jira-update-worklogs-from-org-clocks)
+;; (define-key org-jira-map (kbd "C-c tj") 'org-jira-todo-to-jira)
+;; (define-key org-jira-map (kbd "C-c if") 'org-jira-get-issues-by-fixversion)
+;; (defconst org-jira-progress-issue-flow
+;;   '(("To Do" . "In Progress"
+;;      ("In Progress" . "Done"))))
+;; (defconst org-jira-progress-issue-flow
+;;   '(("To Do" . "Start Progress")
+;;     ("In Development" . "Ready For Review")
+;;     ("Code Review" . "Done")
+;;     ("Done" . "Reopen")))
+
+
+;; change font for done task
+(setq org-fontify-done-headline t)
+
+
+;; mu4e configuration
+;; mail mu4e
+(add-to-list 'load-path "/opt/mu-1.0/mu4e")
+(require 'mu4e)
+(setq mail-user-agent 'mu4e-user-agent)
+(setq mu4e-maildir "/home/yhk/Maildir")
+
+
+(setq mu4e-drafts-folder "/[Gmail].Drafts")
+(setq mu4e-sent-folder   "/[Gmail].Sent Mail")
+(setq mu4e-trash-folder  "/[Gmail].Trash")
+
+
+;; don't save message to Sent Messages, Gmail/IMAP takes care of this
+(setq mu4e-sent-messages-behavior 'delete)
+
+;; (See the documentation for `mu4e-sent-messages-behavior' if you have
+;; additional non-Gmail addresses and want assign them different
+;; behavior.)
+
+;; setup some handy shortcuts
+;; you can quickly switch to your Inbox -- press ``ji''
+;; then, when you want archive some messages, move them to
+;; the 'All Mail' folder by pressing ``ma''.
+
+(setq mu4e-maildir-shortcuts
+    '( ("/INBOX"               . ?i)
+       ("/[Gmail].Sent Mail"   . ?s)
+       ("/[Gmail].Trash"       . ?t)
+       ("/[Gmail].All Mail"    . ?a)))
+
+
+(setq mu4e-get-mail-command "offlineimap -o")
+
+;; something about ourselves
+(setq
+   user-mail-address "goldenfermi@gmail.com"
+   user-full-name  "Youngha Kim"
+   mu4e-compose-signature
+    (concat
+     ""
+     ))
+
+(require 'smtpmail)
+(setq message-send-mail-function 'smtpmail-send-it
+   starttls-use-gnutls t
+   smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
+   smtpmail-auth-credentials
+        '(("smtp.gmail.com" 587 "goldenfermi@gmail.com" nil))
+   smtpmail-default-smtp-server "smtp.gmail.com"
+   smtpmail-smtp-server "smtp.gmail.com"
+   smtpmail-smtp-service 587)
+
+;; don't save message to Sent Messages, Gmail/IMAP takes care of this
+(setq mu4e-sent-messages-behavior 'delete)
+
+;; (setq mu4e-contexts
+;;  `( ,(make-mu4e-context
+;;      :name "personal"
+;;      :match-func (lambda (msg) (when msg
+;;        (string-prefix-p "/personal" (mu4e-message-field msg :maildir))))
+;;      :vars '(
+;; 	     (mu4e-drafts-folder . "/[Gmail].Drafts")
+;; 	     (mu4e-trash-folder . "/[Gmail].Trash")
+;; 	     (mu4e-refile-folder . "/[Gmail].Archive")
+;; 	     ))
+;;    ,(make-mu4e-context
+;;      :name "school"
+;;      :match-func (lambda (msg) (when msg
+;;        (string-prefix-p "/school" (mu4e-message-field msg :maildir))))
+;;      :vars '(
+;;    	     (mu4e-drafts-folder . "/[Gmail.Drafts")
+;;    	     (mu4e-trash-folder . "/[Gmail.Trash")
+;;    	     (mu4e-refile-folder . "/[Gmail].Archive")
+;;    	     ))
+;;    ))
+
+;; ;; refile messages according to the date
+;; (defun refile-to-date-folder (prefix msg)
+;;   "Refiles the message to the prefix.year.month folder according to 
+;; the message date. Creates the folder if necessary"
+;;   (let* ((time (mu4e-message-field-raw msg :date))
+;;          (mdir (if time (concat prefix (format-time-string ".%Y.%m" time)) prefix))
+;;          (fullpath (concat mu4e-maildir mdir)))
+;;     (if (mu4e-create-maildir-maybe fullpath) 
+;;         mdir
+;;       (mu4e-error "Folder does not exist"))))
+
+;; (defun refile-to-old-date-folder (msg)
+;;   "Refiles to old."
+;;   (refile-to-date-folder "/old" msg))
+
+;; ;; default
+;; (setq
+;;  mu4e-refile-folder 'refile-to-old-date-folder)
+
+
+;; setup some handy shortcuts
+;; you can quickly switch to your Inbox -- press ``ji''
+;; then, when you want archive some messages, move them to
+;; the 'All Mail' folder by pressing ``ma''.
+
+
+
+;; also, make sure the gnutls command line utils are installed
+;; package 'gnutls-bin' in Debian/Ubuntu
+
+
+;; (defvar my-mu4e-account-alist
+;;   '(("personal"
+;;      (mu4e-sent-folder "/[Gmail].Sent Mail")
+;;      (user-mail-address "goldenfermi@gmail.com")
+;;      (smtpmail-smtp-user "goldenfermi")
+;;      (smtpmail-local-domain "gmail.com")
+;;      (smtpmail-default-smtp-server "smtp.gmail.com")
+;;      (smtpmail-smtp-server "smtp.gmail.com")
+;;      (smtpmail-smtp-service 587)
+;;      )
+;;     ;; ("school"
+;;     ;;  (mu4e-sent-folder "/[Gmail].Sent Mail")
+;;     ;;  (user-mail-address "younghak@student.unimelb.edu.au")
+;;     ;;  (smtpmail-smtp-user "younghak")
+;;     ;;  (smtpmail-local-domain "student.unimelb.edu.au")
+;;     ;;  (smtpmail-default-smtp-server "smtp.gmail.com")
+;;     ;;  (smtpmail-smtp-server "smtp.gmail.com")
+;;     ;;  (smtpmail-smtp-service 587)
+;;     ;;  )
+     
+;;      ;; Include any other accounts here ...
+;;     ))
+
+;; (defun my-mu4e-set-account ()
+;;   "Set the account for composing a message.
+;;    This function is taken from: 
+;;      https://www.djcbsoftware.nl/code/mu/mu4e/Multiple-accounts.html"
+;;   (let* ((account
+;;     (if mu4e-compose-parent-message
+;;         (let ((maildir (mu4e-message-field mu4e-compose-parent-message :maildir)))
+;;     (string-match "/\\(.*?\\)/" maildir)
+;;     (match-string 1 maildir))
+;;       (completing-read (format "Compose with account: (%s) "
+;;              (mapconcat #'(lambda (var) (car var))
+;;             my-mu4e-account-alist "/"))
+;;            (mapcar #'(lambda (var) (car var)) my-mu4e-account-alist)
+;;            nil t nil nil (caar my-mu4e-account-alist))))
+;;    (account-vars (cdr (assoc account my-mu4e-account-alist))))
+;;     (if account-vars
+;;   (mapc #'(lambda (var)
+;;       (set (car var) (cadr var)))
+;;         account-vars)
+;;       (error "No email account found"))))
+;; (add-hook 'mu4e-compose-pre-hook 'my-mu4e-set-account)
+
+;; ;; don't keep message buffers around
+;; (setq message-kill-buffer-on-exit t)
+;; ;; don't save messages to Sent Messages, Gmail/IMAP takes care of this
+;; (setq mu4e-sent-messages-behavior 'delete)
+
+;; ----------------------
+(custom-set-variables
+ '(ansi-color-faces-vector
+   [default bold shadow italic underline bold bold-italic bold])
+ '(custom-enabled-themes (quote (misterioso)))
+ '(default-input-method "korean-hangul")
+ '(fci-rule-color "#37474f")
+ '(hl-sexp-background-color "#1c1f26")
+ '(org-agenda-files
+   (quote
+    ("~/Dropbox/org/work.org" "~/Dropbox/org/school.org" "~/Dropbox/org/home.org")))
+ '(org-modules
+   (quote
+    (org-bbdb org-bibtex org-docview org-gnus org-habit org-info org-irc org-mhe org-rmail org-w3m)))
+ '(org-tag-alist nil)
+ '(org-todo-keywords
+   (quote
+    ((sequence "CAPTURE(c)" "ACTIONABLE(a)" "INCUBATE(i)" "|" "DELEGATE(g)" "CANCELLED(x)")
+     (sequence "ORGANIZE(o)" "FOLLOWUP(f)" "REFLECT(r)")
+     (sequence "TODO(t)" "|" "DONE(d)"))))
+ )
+
+(put 'scroll-left 'disabled nil)
