@@ -12,6 +12,7 @@
   (add-to-list 'package-archives 
 	       '("org" . "http://orgmode.org/elpa/") t) ;; ord-mode repository
   )
+(package-initialize)
 
 ; Use "package" to install "use-package", a better package management and config system
 (unless (package-installed-p 'use-package)
@@ -21,48 +22,43 @@
 (eval-when-compile
   (require 'use-package))
 
-(defvar myPackages
-  '(better-defaults
-    material-theme))
+;; (defvar myPackages
+;;   '(better-defaults
+;;     deeper-blue-theme))
 
-(mapc #'(lambda (package)
-    (unless (package-installed-p package)
-      (package-install package)))
-      myPackages)
+;; (mapc #'(lambda (package)
+;;     (unless (package-installed-p package)
+;;       (package-install package)))
+;;       myPackages)
 
-(setq inhibit-startup-message t) ;; hide the startup message
-(load-theme 'material t) ;; load material theme
+;; set $MATHPATH, $PATH, exec-path from shell on linux and os X
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))
 
 
-;; line number present
-(global-linum-mode t)
-    
-
-;; -*- mode: elisp -*-
-;; Disable the splash screen (to enable it agin, replace the t with 0)
+;; ----------------------------
+;; BASIC CUSTOMIZATION
+;; hide the startup message
+(setq inhibit-startup-message t) 
 (setq inhibit-splash-screen t)
+(global-linum-mode t)
 
 ;; Enable transient mark mode
 (transient-mark-mode 1)
 
 ;; meta key from alt to cmd on Mac
- (setq mac-option-modifier 'super)
- (setq mac-command-modifier 'meta)
+;; (setq mac-option-modifier 'super)
+;; (setq mac-command-modifier 'meta)
 
 (global-set-key (kbd "C-?") 'help-command)
 (global-set-key (kbd "C-h") 'delete-backward-char)
 (global-set-key (kbd "M-h") 'backward-kill-word)
 
 
-;; Your path from shell needs to be seen by Emacs, and to make that easier, use the following elisp package.
-(add-to-list 'load-path "~/.emacs.d/lisp")
-(unless (require 'exec-path-from-shell nil 'noerror)
-  (exec-path-from-shell-initialize))
-
-; Make OS shell path available in emacs exec path
-(use-package exec-path-from-shell
-  :ensure t
-  :config (exec-path-from-shell-copy-env "PATH"))
+;; ;; Your path from shell needs to be seen by Emacs, and to make that easier, use the following elisp package.
+;; (add-to-list 'load-path "~/.emacs.d/packages")
+;; (unless (require 'exec-path-from-shell nil 'noerror)
+;;   (exec-path-from-shell-initialize))
 
 
 ;; -------
@@ -75,8 +71,8 @@
 
 ;; Displaying compilation error messages in the echo area
 (setq help-at-pt-display-when-idle t)
-(setq help-at-pt-timer-delay 0.1)
-(help-at-pt-set-timer)
+;; (setq help-at-pt-timer-delay 0.1)
+;; (help-at-pt-set-timer)
 
 ;;------------------------
 
@@ -152,57 +148,72 @@
 (global-set-key [C-S-right] 'shift-right)
 (global-set-key [C-S-left] 'shift-left)
 
+;; spaces instead of tabs when indenting
+(setq-default indent-tabs-mode nil)
+
+;; only when previously worked-on project had already used tab for indentation
+;; -------------------
+;; (defun infer-indentation-style ()
+;;   ;; if our source file uses tabs, we use tabs, if spaces spaces, and if        
+;;   ;; neither, we use the current indent-tabs-mode                               
+;;   (let ((space-count (how-many "^  " (point-min) (point-max)))
+;;         (tab-count (how-many "^\t" (point-min) (point-max))))
+;;     (if (> space-count tab-count) (setq indent-tabs-mode nil))
+;;     (if (> tab-count space-count) (setq indent-tabs-mode t))))
+
+;; (infer-indentation-style)
+
 ;;----
 
-(defun indent-region-custom(numSpaces)
-    (progn 
-        ; default to start and end of current line
-        (setq regionStart (line-beginning-position))
-        (setq regionEnd (line-end-position))
+;; (defun indent-region-custom(numSpaces)
+;;     (progn 
+;;         ; default to start and end of current line
+;;         (setq regionStart (line-beginning-position))
+;;         (setq regionEnd (line-end-position))
 
-        ; if there's a selection, use that instead of the current line
-        (when (use-region-p)
-            (setq regionStart (region-beginning))
-            (setq regionEnd (region-end))
-        )
+;;         ; if there's a selection, use that instead of the current line
+;;         (when (use-region-p)
+;;             (setq regionStart (region-beginning))
+;;             (setq regionEnd (region-end))
+;;         )
 
-        (save-excursion ; restore the position afterwards            
-            (goto-char regionStart) ; go to the start of region
-            (setq start (line-beginning-position)) ; save the start of the line
-            (goto-char regionEnd) ; go to the end of region
-            (setq end (line-end-position)) ; save the end of the line
+;;         (save-excursion ; restore the position afterwards            
+;;             (goto-char regionStart) ; go to the start of region
+;;             (setq start (line-beginning-position)) ; save the start of the line
+;;             (goto-char regionEnd) ; go to the end of region
+;;             (setq end (line-end-position)) ; save the end of the line
 
-            (indent-rigidly start end numSpaces) ; indent between start and end
-            (setq deactivate-mark nil) ; restore the selected region
-        )
-    )
-)
+;;             (indent-rigidly start end numSpaces) ; indent between start and end
+;;             (setq deactivate-mark nil) ; restore the selected region
+;;         )
+;;     )
+;; )
 
-(defun untab-region (N)
-    (interactive "p")
-    (indent-region-custom -4)
-)
+;; (defun untab-region (N)
+;;     (interactive "p")
+;;     (indent-region-custom -4)
+;; )
 
-(defun tab-region (N)
-    (interactive "p")
-    (if (active-minibuffer-window)
-        (minibuffer-complete)    ; tab is pressed in minibuffer window -> do completion
-    ; else
-    (if (string= (buffer-name) "*shell*")
-        (comint-dynamic-complete) ; in a shell, use tab completion
-    ; else
-    (if (use-region-p)    ; tab is pressed is any other buffer -> execute with space insertion
-        (indent-region-custom 4) ; region was selected, call indent-region
-        (insert "    ") ; else insert four spaces as expected
-    )))
-)
+;; (defun tab-region (N)
+;;     (interactive "p")
+;;     (if (active-minibuffer-window)
+;;         (minibuffer-complete)    ; tab is pressed in minibuffer window -> do completion
+;;     ; else
+;;     (if (string= (buffer-name) "*shell*")
+;;         (comint-dynamic-complete) ; in a shell, use tab completion
+;;     ; else
+;;     (if (use-region-p)    ; tab is pressed is any other buffer -> execute with space insertion
+;;         (indent-region-custom 4) ; region was selected, call indent-region
+;;         (insert "    ") ; else insert four spaces as expected
+;;     )))
+;; )
 
-(global-set-key (kbd "<backtab>") 'untab-region)
-(global-set-key (kbd "<tab>") 'tab-region)
+;; (global-set-key (kbd "<backtab>") 'untab-region)
+;; (global-set-key (kbd "<tab>") 'tab-region)
 
 ;; -------
 
-(projectile-global-mode)
+(projectile-mode)
 (global-company-mode t)
 
 (require 'ido)
@@ -292,6 +303,23 @@
 
 (global-set-key [f5] 'toggle-php-flavor-mode)
 
+;; highlight indentation
+(add-to-list 'load-path "~/.emacs.d/packages/highlight-indents/")
+(require 'highlight-indentation)
+(add-hook 'python-mode-hook 'highlight-indentation-mode)
+(add-hook 'js2-mode-hook 'highlight-indentation-mode)
+
+(defun aj-toggle-fold ()
+  "Toggle fold all lines larger than indentation on current line"
+  (interactive)
+  (let ((col 1))
+    (save-excursion
+      (back-to-indentation)
+      (setq col (+ 1 (current-column)))
+      (set-selective-display
+       (if selective-display nil (or col 1))))))
+(global-set-key [(M C i)] 'aj-toggle-fold)
+
 
 ;; ---------------------------------------------
  
@@ -310,32 +338,44 @@
 
 
 ;; -------
-;; nerd tree configuration
-(setq neo-theme (if (display-graphic-p) 'icons 'arrow))
+;; ;; nerd tree configuration
+;; (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
 
-;; Every time when the neotree window is opened, let it find current file and jump to node.
-(setq neo-smart-open t)
+;; ;; Every time when the neotree window is opened, let it find current file and jump to node.
+;; (setq neo-smart-open t)
 
-;; When running 'projectile-switch-project' (C-c p p), 'neotree' will change root automatically.
-(setq projectile-switch-project-action 'neotree-projectile-action)
+;; ;; When running 'projectile-switch-project' (C-c p p), 'neotree' will change root automatically.
+;; (setq projectile-switch-project-action 'neotree-projectile-action)
 
 
-(require 'ess-site)
-(add-to-list 'load-path "/opt/ess-17.11/lisp")
+;; (add-to-list 'load-path "/opt/ess-17.11/lisp")
 (load "ess-site")
-(setq ess-smart-S-assign-key ":")
-(ess-toggle-S-assign nil)
-(ess-toggle-S-assign nil)
+;; (setq ess-smart-S-assign-key ":")
+;; (ess-toggle-S-assign nil)
+;; (ess-toggle-S-assign nil)
 (ess-toggle-underscore nil) ; leave underscore key alone!
+
+
+;; python set up
+;; (require 'virtualenvwrapper)
+;; (venv-initialize-interactive-shells) ;; if you want interactive shell support
+;; (venv-initialize-eshell) ;; if you want eshell support
+
+(add-hook 'python-mode-hook 'anaconda-mode)
+
 
 
 ;;;;org-mode configuration
 ;; Enable org-mode
-(require 'org)
-(add-to-list 'load-path "/home/yhk/.emacs.d/lisp")
-(setq org-directory "/home/yhk/Dropbox/org")
-(setq org-mobile-inbox-for-pull "/home/yhk/Dropbox/org/mobile.org")
-(setq org-mobile-directory "/home/yhk/Dropbox/Apps/MobileOrg")
+(add-to-list 'load-path "~/.emacs.d/org-9.1.6/lisp")
+(add-to-list 'load-path "~/.emacs.d/org-9.1.6/contrib/lisp" t)
+
+;; location of local org files
+(setq org-directory "/home/yhk/Dropbox/gtd")
+;; ;; name of the file new notes will be stored
+;; (setq org-mobile-inbox-for-pull "/home/yhk/Dropbox/gtd/mobile.org")
+;; ;; Dropbox root directory for MobileOrg
+;; (setq org-mobile-directory "/home/yhk/Dropbox/Apps/MobileOrg")
 
 ;; (load "ob-julia.el")
 (org-babel-do-load-languages
@@ -343,6 +383,7 @@
  '((R . t)
    (emacs-lisp . t)
    (python . t)
+   (shell . t)
    ))
 
 (setq org-confirm-babel-evaluate nil)
@@ -350,19 +391,23 @@
 (add-hook 'org-mode-hook 'org-display-inline-images)
 
 (setq org-log-done t)
-(setq org-agenda-files (list org-directory))
+(setq org-agenda-files '("~/Dropbox/gtd"))
 (setq org-default-notes-file (concat org-directory "/notes.org"))
 (setq org-capture-templates
       '(
-	("a" "Appointment" entry (file+headline "~/Dropbox/org/gcal.org" "Calendar") "* APPT %^{Description} %^g
-%?
-Added: %U")
-        ("j" "Journal" entry (file+datetree "~/Dropbox/org/journal.org")
-	 "* %?\nEntered on %U\n  %i\n  %a")
-	("l" "Link" entry (file+headline "~/Dropbox/org/link.org" "Links")
-	 "* %? %^L %^g \n%T" :prepend t)
-	("d" "Diet" entry (file+datetree "~/Dropbox/org/diet.org")
-	 "* %?\nEntered on %U\n  %i\n  %a")))
+	("c" "Capture" entry (file+headline "~/Dropbox/gtd/inbox.org" "Tasks")
+	 "* CAPTURE %i%?")
+	("j" "Journal" entry (file+olp+datetree "~/Dropbox/gtd/journal.org")
+	 "** %^{Heading}")
+	("l" "Log Time" entry (file+datetree "~/Dropbox/gtd/timelog.org")
+	 "** %U - %^{Activity}  :TIMELOG:")
+	))
+
+(setq org-refile-targets '((nil :maxlevel . 9)
+                                (org-agenda-files :maxlevel . 9)))
+(setq org-outline-path-complete-in-steps nil)         ; Refile in a single go
+(setq org-refile-use-outline-path t)                  ; Show full paths for refiling
+
 ;; The following lines are always needed.  Choose your own keys.
 (global-set-key "\C-cl" 'org-store-link)
 (global-set-key "\C-ca" 'org-agenda)
@@ -384,7 +429,7 @@ Added: %U")
 (defun org-archive-done-tasks()
   (interactive)
   (org-map-entries
-   (lambda ()
+   (lambda gtd()
      (org-archive-subtree)
      (setq org-ap-continue-from (outline-previous-heading)))
    "/DONE" 'tree))
@@ -396,8 +441,49 @@ Added: %U")
 (eval-after-load "org"
   '(require 'ox-md nil t))
 
+;; org-mode to wordpress blog
+(setq org2blog/wp-blog-alist
+      `(("wordpress"
+	 :url "https://younghak.wordpress.com/xmlrpc.php"
+	 :username "younghak"
+	 :default-title "Hello World"
+	 :default-categories "Uncategorized"
+	 :tags-as-categories nil)
+	)
+      )
+
+(setq org2blog/wp-buffer-template
+      "--------------------------
+#+TITLE: %s
+#+DATE: %s
+--------------------------\n")
+(defun my-format-function (format-string)
+  (format format-string
+	  org2blog/wp-default-title
+	  (format-time-string "%d-%m-%Y" (current-time))))
+(setq org2blog/wp-buffer-format-function 'my-format-function)
+
+
+;; (let (credentials)
+;;   (add-to-list 'auth-sources "~/.authinfo.gpg")
+;;   (setq credentials (auth-source-user-and-password "wordpressblog"))
+;;   (setq org2blog/wp-blog-alist
+;; 	`(("wordpress"
+;; 	   :url "https://younghak.wordpress.com/xmlrpc.php"
+;; 	   :username ,(car (auth-source-user-and-password "wordpressblog"))
+;; 	   :password ,(cadr (auth-source-user-and-password "wordpressblog"))
+;; 	   :default-title "Hello World"
+;; 	   :default-categories ("Uncategorized")
+;; 	   :tags-as-categories nil))))
+;; (setq org2blog/wp-use-sourcecode-shortcode 't)
+;; (setq org2blog/wp-sourcecode-default-params nil)
+;; (setq org2blog/wp-sourcecode-langs
+;;       '("bash" "java" "sql" "pytyhon" "emacs-lisp" "lisp"))
+;; (setq org-src-fontify-natively t)
+
+
 ;; ;; org-jira setting
-;; (setq jiralib-url "https://your-site.atlassian.net")
+(setq jiralib-url "http://perforce.signalnco.com/")
 ;; (define-key org-jira-map (kbd "C-c pg") 'org-jira-get-projects)
 ;; (define-key org-jira-map (kbd "C-c ib") 'org-jira-browse-issue)
 ;; (define-key org-jira-map (kbd "C-c ig") 'org-jira-get-issues)
@@ -432,10 +518,10 @@ Added: %U")
 
 ;; mu4e configuration
 ;; mail mu4e
-(add-to-list 'load-path "/opt/mu-1.0/mu4e")
+(add-to-list 'load-path "/opt/mu/mu4e")
 (require 'mu4e)
 (setq mail-user-agent 'mu4e-user-agent)
-(setq mu4e-maildir "/home/yhk/Maildir")
+(setq mu4e-maildir "~/Maildir")
 
 
 (setq mu4e-drafts-folder "/[Gmail].Drafts")
@@ -485,6 +571,10 @@ Added: %U")
 
 ;; don't save message to Sent Messages, Gmail/IMAP takes care of this
 (setq mu4e-sent-messages-behavior 'delete)
+
+;; ;; don't keep message buffers around
+(setq message-kill-buffer-on-exit t)
+
 
 ;; (setq mu4e-contexts
 ;;  `( ,(make-mu4e-context
@@ -583,22 +673,30 @@ Added: %U")
 ;;       (error "No email account found"))))
 ;; (add-hook 'mu4e-compose-pre-hook 'my-mu4e-set-account)
 
-;; ;; don't keep message buffers around
-;; (setq message-kill-buffer-on-exit t)
 ;; ;; don't save messages to Sent Messages, Gmail/IMAP takes care of this
 ;; (setq mu4e-sent-messages-behavior 'delete)
 
 ;; ----------------------
 (custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(ansi-color-faces-vector
    [default bold shadow italic underline bold bold-italic bold])
- '(custom-enabled-themes (quote (misterioso)))
+ '(ansi-color-names-vector
+   ["black" "#d55e00" "#009e73" "#f8ec59" "#0072b2" "#cc79a7" "#56b4e9" "white"])
+ '(custom-enabled-themes (quote (deeper-blue)))
  '(default-input-method "korean-hangul")
  '(fci-rule-color "#37474f")
  '(hl-sexp-background-color "#1c1f26")
  '(org-agenda-files
    (quote
-    ("~/Dropbox/org/work.org" "~/Dropbox/org/school.org" "~/Dropbox/org/home.org")))
+    ("/home/yhk/Dropbox/gtd/gtd.org" "/home/yhk/Dropbox/gtd/inbox.org" "/home/yhk/Dropbox/gtd/someday.org" "/home/yhk/Dropbox/gtd/tickler.org" "/home/yhk/Dropbox/gtd/reference.org")))
+ '(org-columns-default-format "%40ITEM(Task) %17Effort(Estimated Effort){:} %CLOCKSUM")
+ '(org-global-properties
+   (quote
+    (("Effort_Allowed" . "00:05 00:10 00:20 00:30 00:45 01:00 02:00 03:00 04:00 05:00 06:00"))))
  '(org-modules
    (quote
     (org-bbdb org-bibtex org-docview org-gnus org-habit org-info org-irc org-mhe org-rmail org-w3m)))
@@ -608,6 +706,27 @@ Added: %U")
     ((sequence "CAPTURE(c)" "ACTIONABLE(a)" "INCUBATE(i)" "|" "DELEGATE(g)" "CANCELLED(x)")
      (sequence "ORGANIZE(o)" "FOLLOWUP(f)" "REFLECT(r)")
      (sequence "TODO(t)" "|" "DONE(d)"))))
- )
+ '(vc-annotate-background nil)
+ '(vc-annotate-color-map
+   (quote
+    ((20 . "#f36c60")
+     (40 . "#ff9800")
+     (60 . "#fff59d")
+     (80 . "#8bc34a")
+     (100 . "#81d4fa")
+     (120 . "#4dd0e1")
+     (140 . "#b39ddb")
+     (160 . "#f36c60")
+     (180 . "#ff9800")
+     (200 . "#fff59d")
+     (220 . "#8bc34a")
+     (240 . "#81d4fa")
+     (260 . "#4dd0e1")
+     (280 . "#b39ddb")
+     (300 . "#f36c60")
+     (320 . "#ff9800")
+     (340 . "#fff59d")
+     (360 . "#8bc34a"))))
+ '(vc-annotate-very-old-color nil))
 
 (put 'scroll-left 'disabled nil)
