@@ -1,5 +1,7 @@
-;;; package --- Summary:
-;;; Code
+;;; package --- Summary
+;;; Commentary:
+
+;;; Code:
 (when (>= emacs-major-version 24)
   (require 'package)
   (package-initialize)
@@ -35,14 +37,13 @@
 (when (memq window-system '(mac ns x))
   (exec-path-from-shell-initialize))
 
-
 ;; ----------------------------
 ;; BASIC CUSTOMIZATION
 ;; hide the startup message
 (setq inhibit-startup-message t) 
 (setq inhibit-splash-screen t)
 (global-linum-mode t)
-
+(global-visual-line-mode 1)
 ;; Enable transient mark mode
 (transient-mark-mode 1)
 
@@ -61,9 +62,33 @@
 ;;   (exec-path-from-shell-initialize))
 
 
+;; Some convenient variables
+(defvar dotfiles-dir (file-name-directory
+                    (or (buffer-file-name) load-file-name))
+  "The root directory of the Emacs initialization process.")
+(defvar modules-dir (concat dotfiles-dir "modules/")
+  "This directory contains most of the customizations.  These files cover editing,  UI, and mode specific changes.")
+(defvar vendor-dir (concat dotfiles-dir "vendor/")
+  "This directory house Emacs Lisp packages that are not yet available in ELPA (or Marmalade).")
+
+
+;; add directories to Emacs's `load-path'
+(add-to-list 'load-path modules-dir)
+(add-to-list 'load-path vendor-dir)
+
+;; Keep customizations in a separate file
+(setq custom-file (concat dotfiles-dir "custom.el"))
+(load custom-file 'noerror)
+
+
+
+(setq user-full-name "Youngha Kim")
+(setq user-mail-address "yh.kim@outlook.com")
+
+
 ;; -------
 (defun create-shell ()
-    "creates a shell with a given name"
+    "Create a shell with a given name."
     (interactive);; "Prompt\n shell name:")
     (let ((shell-name (read-string "shell name: " nil)))
     (shell (concat "*" shell-name "*"))))
@@ -74,50 +99,45 @@
 ;; (setq help-at-pt-timer-delay 0.1)
 ;; (help-at-pt-set-timer)
 
+
+;; create windmove bindings
+(global-set-key "\M-j" 'windmove-left)
+(global-set-key "\M-l" 'windmove-right)
+(global-set-key "\M-i" 'windmove-up)
+(global-set-key "\M-k" 'windmove-down)
+
 ;;------------------------
 
-(when (eq system-type 'darwin)
-  (set-face-attribute 'default nil :family "Monaco")
+(when (eq system-type 'gnu/linux)
 
   ;; default font size (point * 10)
-
-  ;; default Latin font (e.g. Consolas)
-  ;; but I use Monaco 
-  (set-face-attribute 'default nil :family "Monaco")
-
-  ;; default font size (point * 10)
-  ;;
-  ;; WARNING!  Depending on the default font,
-  ;; if the size is not supported very well, the frame will be clipped
-  ;; so that the beginning of the buffer may not be visible correctly. 
-  (set-face-attribute 'default nil :height 130)
-
-  ;; use specific font for Korean charset.
-  ;; if you want to use different font size for specific charset,
-  ;; add :size POINT-SIZE in the font-spec.
+  
+  ;; (set-face-attribute 'default nil :family "Monaco")
   (set-fontset-font t 'hangul (font-spec :name "NanumGothicCoding"))
-
-  ;; you may want to add different for other charset in this way.
+  
+  
   )
 
 ;;---------------------------
 ;; korean font
-(defun xftp (&optional frame)
-  "Return t if FRAME support XFT font backend."
-  (let ((xft-supported))
-    (mapc (lambda (x) (if (eq x 'xft) (setq xft-supported t)))
-          (frame-parameter frame 'font-backend))
-    xft-supported))
 
-(when (xftp)
-  (let ((fontset "fontset-default"))
-    (set-fontset-font fontset 'latin
-                      '("DejaVu Sans Mono" . "unicode-bmp"))
-    (set-fontset-font fontset 'hangul
-                      '("NanumGothic" . "unicode-bmp"))
-    (set-face-attribute 'default nil
-                        :font fontset
-                        :height 110)))
+
+;; (defun xftp (&optional frame)
+;;   "Return t if FRAME support XFT font backend."
+;;   (let ((xft-supported))
+;;     (mapc (lambda (x) (if (eq x 'xft) (setq xft-supported t)))
+;;           (frame-parameter frame 'font-backend))
+;;     xft-supported))
+
+;; (when (xftp)
+;;   (let ((fontset "fontset-default"))
+;;     (set-fontset-font fontset 'latin
+;;                       '("DejaVu Sans"  . "unicode-bmp"))
+;;     (set-fontset-font fontset 'hangul
+;;                       '("NanumGothicCoding" . "unicode-bmp"))
+;;     (set-face-attribute 'default nil
+;;                         :font fontset
+;;                         :height 110)))
 
 ;; --------
 ;; Shift the selected region right if distance is postive, left if
@@ -151,67 +171,8 @@
 ;; spaces instead of tabs when indenting
 (setq-default indent-tabs-mode nil)
 
-;; only when previously worked-on project had already used tab for indentation
-;; -------------------
-;; (defun infer-indentation-style ()
-;;   ;; if our source file uses tabs, we use tabs, if spaces spaces, and if        
-;;   ;; neither, we use the current indent-tabs-mode                               
-;;   (let ((space-count (how-many "^  " (point-min) (point-max)))
-;;         (tab-count (how-many "^\t" (point-min) (point-max))))
-;;     (if (> space-count tab-count) (setq indent-tabs-mode nil))
-;;     (if (> tab-count space-count) (setq indent-tabs-mode t))))
 
-;; (infer-indentation-style)
-
-;;----
-
-;; (defun indent-region-custom(numSpaces)
-;;     (progn 
-;;         ; default to start and end of current line
-;;         (setq regionStart (line-beginning-position))
-;;         (setq regionEnd (line-end-position))
-
-;;         ; if there's a selection, use that instead of the current line
-;;         (when (use-region-p)
-;;             (setq regionStart (region-beginning))
-;;             (setq regionEnd (region-end))
-;;         )
-
-;;         (save-excursion ; restore the position afterwards            
-;;             (goto-char regionStart) ; go to the start of region
-;;             (setq start (line-beginning-position)) ; save the start of the line
-;;             (goto-char regionEnd) ; go to the end of region
-;;             (setq end (line-end-position)) ; save the end of the line
-
-;;             (indent-rigidly start end numSpaces) ; indent between start and end
-;;             (setq deactivate-mark nil) ; restore the selected region
-;;         )
-;;     )
-;; )
-
-;; (defun untab-region (N)
-;;     (interactive "p")
-;;     (indent-region-custom -4)
-;; )
-
-;; (defun tab-region (N)
-;;     (interactive "p")
-;;     (if (active-minibuffer-window)
-;;         (minibuffer-complete)    ; tab is pressed in minibuffer window -> do completion
-;;     ; else
-;;     (if (string= (buffer-name) "*shell*")
-;;         (comint-dynamic-complete) ; in a shell, use tab completion
-;;     ; else
-;;     (if (use-region-p)    ; tab is pressed is any other buffer -> execute with space insertion
-;;         (indent-region-custom 4) ; region was selected, call indent-region
-;;         (insert "    ") ; else insert four spaces as expected
-;;     )))
-;; )
-
-;; (global-set-key (kbd "<backtab>") 'untab-region)
-;; (global-set-key (kbd "<tab>") 'tab-region)
-
-;; -------
+;; ;; -------
 
 (projectile-mode)
 (global-company-mode t)
@@ -310,7 +271,7 @@
 (add-hook 'js2-mode-hook 'highlight-indentation-mode)
 
 (defun aj-toggle-fold ()
-  "Toggle fold all lines larger than indentation on current line"
+  "Toggle fold all lines larger than indentation on current line."
   (interactive)
   (let ((col 1))
     (save-excursion
@@ -321,7 +282,7 @@
 (global-set-key [(M C i)] 'aj-toggle-fold)
 
 
-;; ---------------------------------------------
+;; ;; ;; ---------------------------------------------
  
 
 (custom-set-faces
@@ -357,12 +318,11 @@
 
 
 ;; python set up
-;; (require 'virtualenvwrapper)
-;; (venv-initialize-interactive-shells) ;; if you want interactive shell support
-;; (venv-initialize-eshell) ;; if you want eshell support
+(require 'virtualenvwrapper)
+(venv-initialize-interactive-shells) ;; if you want interactive shell support
+(venv-initialize-eshell) ;; if you want eshell support
 
 (add-hook 'python-mode-hook 'anaconda-mode)
-
 
 
 ;;;;org-mode configuration
@@ -377,7 +337,7 @@
 ;; ;; Dropbox root directory for MobileOrg
 ;; (setq org-mobile-directory "/home/yhk/Dropbox/Apps/MobileOrg")
 
-;; (load "ob-julia.el")
+;; ;; (load "ob-julia.el")
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((R . t)
@@ -386,12 +346,12 @@
    (shell . t)
    ))
 
-(setq org-confirm-babel-evaluate nil)
-(add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
-(add-hook 'org-mode-hook 'org-display-inline-images)
+;; (setq org-confirm-babel-evaluate nil)
+;; (add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
+;; (add-hook 'org-mode-hook 'org-display-inline-images)
 
 (setq org-log-done t)
-(setq org-agenda-files '("~/Dropbox/gtd"))
+(setq org-agenda-files '("/home/yhk/Dropbox/gtd"))
 (setq org-default-notes-file (concat org-directory "/notes.org"))
 (setq org-capture-templates
       '(
@@ -441,29 +401,29 @@
 (eval-after-load "org"
   '(require 'ox-md nil t))
 
-;; org-mode to wordpress blog
-(setq org2blog/wp-blog-alist
-      `(("wordpress"
-	 :url "https://younghak.wordpress.com/xmlrpc.php"
-	 :username "younghak"
-	 :default-title "Hello World"
-	 :default-categories "Uncategorized"
-	 :tags-as-categories nil)
-	)
-      )
+;; ;; org-mode to wordpress blog
+;; (setq org2blog/wp-blog-alist
+;;       `(("wordpress"
+;; 	 :url "https://younghak.wordpress.com/xmlrpc.php"
+;; 	 :username "younghak"
+;; 	 :default-title "Hello World"
+;; 	 :default-categories "Uncategorized"
+;; 	 :tags-as-categories nil)
+;; 	)
+;;       )
 
-(setq org2blog/wp-buffer-template
-      "--------------------------
-#+TITLE: %s
-#+DATE: %s
---------------------------\n")
-(defun my-format-function (format-string)
-  (format format-string
-	  org2blog/wp-default-title
-	  (format-time-string "%d-%m-%Y" (current-time))))
-(setq org2blog/wp-buffer-format-function 'my-format-function)
+;; (setq org2blog/wp-buffer-template
+;;       "--------------------------
+;; #+TITLE: %s
+;; #+DATE: %s
+;; --------------------------\n")
+;; (defun my-format-function (format-string)
+;;   (format format-string
+;; 	  org2blog/wp-default-title
+;; 	  (format-time-string "%d-%m-%Y" (current-time))))
+;; (setq org2blog/wp-buffer-format-function 'my-format-function)
 
-
+;; ;; credential
 ;; (let (credentials)
 ;;   (add-to-list 'auth-sources "~/.authinfo.gpg")
 ;;   (setq credentials (auth-source-user-and-password "wordpressblog"))
@@ -482,199 +442,199 @@
 ;; (setq org-src-fontify-natively t)
 
 
-;; ;; org-jira setting
-(setq jiralib-url "http://perforce.signalnco.com/")
-;; (define-key org-jira-map (kbd "C-c pg") 'org-jira-get-projects)
-;; (define-key org-jira-map (kbd "C-c ib") 'org-jira-browse-issue)
-;; (define-key org-jira-map (kbd "C-c ig") 'org-jira-get-issues)
-;; (define-key org-jira-map (kbd "C-c ih") 'org-jira-get-issues-headonly)
-;; (define-key org-jira-map (kbd "C-c iu") 'org-jira-update-issue)
-;; (define-key org-jira-map (kbd "C-c iw") 'org-jira-progress-issue)
-;; (define-key org-jira-map (kbd "C-c in") 'org-jira-progress-issue-next)
-;; (define-key org-jira-map (kbd "C-c ia") 'org-jira-assign-issue)
-;; (define-key org-jira-map (kbd "C-c ir") 'org-jira-refresh-issue)
-;; (define-key org-jira-map (kbd "C-c iR") 'org-jira-refresh-issues-in-buffer)
-;; (define-key org-jira-map (kbd "C-c ic") 'org-jira-create-issue)
-;; (define-key org-jira-map (kbd "C-c ik") 'org-jira-copy-current-issue-key)
-;; (define-key org-jira-map (kbd "C-c sc") 'org-jira-create-subtask)
-;; (define-key org-jira-map (kbd "C-c sg") 'org-jira-get-subtasks)
-;; (define-key org-jira-map (kbd "C-c cu") 'org-jira-update-comment)
-;; (define-key org-jira-map (kbd "C-c wu") 'org-jira-update-worklogs-from-org-clocks)
-;; (define-key org-jira-map (kbd "C-c tj") 'org-jira-todo-to-jira)
-;; (define-key org-jira-map (kbd "C-c if") 'org-jira-get-issues-by-fixversion)
-;; (defconst org-jira-progress-issue-flow
-;;   '(("To Do" . "In Progress"
-;;      ("In Progress" . "Done"))))
-;; (defconst org-jira-progress-issue-flow
-;;   '(("To Do" . "Start Progress")
-;;     ("In Development" . "Ready For Review")
-;;     ("Code Review" . "Done")
-;;     ("Done" . "Reopen")))
+;; ;; ;; ;; org-jira setting
+;; ;; (setq jiralib-url "http://perforce.signalnco.com:8080/")
+;; ;; ;; (define-key org-jira-map (kbd "C-c pg") 'org-jira-get-projects)
+;; ;; ;; (define-key org-jira-map (kbd "C-c ib") 'org-jira-browse-issue)
+;; ;; ;; (define-key org-jira-map (kbd "C-c ig") 'org-jira-get-issues)
+;; ;; ;; (define-key org-jira-map (kbd "C-c ih") 'org-jira-get-issues-headonly)
+;; ;; ;; (define-key org-jira-map (kbd "C-c iu") 'org-jira-update-issue)
+;; ;; ;; (define-key org-jira-map (kbd "C-c iw") 'org-jira-progress-issue)
+;; ;; ;; (define-key org-jira-map (kbd "C-c in") 'org-jira-progress-issue-next)
+;; ;; ;; (define-key org-jira-map (kbd "C-c ia") 'org-jira-assign-issue)
+;; ;; ;; (define-key org-jira-map (kbd "C-c ir") 'org-jira-refresh-issue)
+;; ;; ;; (define-key org-jira-map (kbd "C-c iR") 'org-jira-refresh-issues-in-buffer)
+;; ;; ;; (define-key org-jira-map (kbd "C-c ic") 'org-jira-create-issue)
+;; ;; ;; (define-key org-jira-map (kbd "C-c ik") 'org-jira-copy-current-issue-key)
+;; ;; ;; (define-key org-jira-map (kbd "C-c sc") 'org-jira-create-subtask)
+;; ;; ;; (define-key org-jira-map (kbd "C-c sg") 'org-jira-get-subtasks)
+;; ;; ;; (define-key org-jira-map (kbd "C-c cu") 'org-jira-update-comment)
+;; ;; ;; (define-key org-jira-map (kbd "C-c wu") 'org-jira-update-worklogs-from-org-clocks)
+;; ;; ;; (define-key org-jira-map (kbd "C-c tj") 'org-jira-todo-to-jira)
+;; ;; ;; (define-key org-jira-map (kbd "C-c if") 'org-jira-get-issues-by-fixversion)
+;; ;; ;; (defconst org-jira-progress-issue-flow
+;; ;; ;;   '(("To Do" . "In Progress"
+;; ;; ;;      ("In Progress" . "Done"))))
+;; ;; ;; (defconst org-jira-progress-issue-flow
+;; ;; ;;   '(("To Do" . "Start Progress")
+;; ;; ;;     ("In Development" . "Ready For Review")
+;; ;; ;;     ("Code Review" . "Done")
+;; ;; ;;     ("Done" . "Reopen")))
 
 
-;; change font for done task
-(setq org-fontify-done-headline t)
+;; ;; change font for done task
+;; (setq org-fontify-done-headline t)
 
 
-;; mu4e configuration
-;; mail mu4e
-(add-to-list 'load-path "/opt/mu/mu4e")
-(require 'mu4e)
-(setq mail-user-agent 'mu4e-user-agent)
-(setq mu4e-maildir "~/Maildir")
+;; ;; ;; mu4e configuration
+;; ;; ;; mail mu4e
+;; ;; (add-to-list 'load-path "/opt/mu/mu4e")
+;; ;; (require 'mu4e)
+;; ;; (setq mail-user-agent 'mu4e-user-agent)
+;; ;; (setq mu4e-maildir "~/Maildir")
 
 
-(setq mu4e-drafts-folder "/[Gmail].Drafts")
-(setq mu4e-sent-folder   "/[Gmail].Sent Mail")
-(setq mu4e-trash-folder  "/[Gmail].Trash")
+;; ;; (setq mu4e-drafts-folder "/[Gmail].Drafts")
+;; ;; (setq mu4e-sent-folder   "/[Gmail].Sent Mail")
+;; ;; (setq mu4e-trash-folder  "/[Gmail].Trash")
 
 
-;; don't save message to Sent Messages, Gmail/IMAP takes care of this
-(setq mu4e-sent-messages-behavior 'delete)
+;; ;; ;; don't save message to Sent Messages, Gmail/IMAP takes care of this
+;; ;; (setq mu4e-sent-messages-behavior 'delete)
 
-;; (See the documentation for `mu4e-sent-messages-behavior' if you have
-;; additional non-Gmail addresses and want assign them different
-;; behavior.)
+;; ;; ;; (See the documentation for `mu4e-sent-messages-behavior' if you have
+;; ;; ;; additional non-Gmail addresses and want assign them different
+;; ;; ;; behavior.)
 
-;; setup some handy shortcuts
-;; you can quickly switch to your Inbox -- press ``ji''
-;; then, when you want archive some messages, move them to
-;; the 'All Mail' folder by pressing ``ma''.
+;; ;; ;; setup some handy shortcuts
+;; ;; ;; you can quickly switch to your Inbox -- press ``ji''
+;; ;; ;; then, when you want archive some messages, move them to
+;; ;; ;; the 'All Mail' folder by pressing ``ma''.
 
-(setq mu4e-maildir-shortcuts
-    '( ("/INBOX"               . ?i)
-       ("/[Gmail].Sent Mail"   . ?s)
-       ("/[Gmail].Trash"       . ?t)
-       ("/[Gmail].All Mail"    . ?a)))
-
-
-(setq mu4e-get-mail-command "offlineimap -o")
-
-;; something about ourselves
-(setq
-   user-mail-address "goldenfermi@gmail.com"
-   user-full-name  "Youngha Kim"
-   mu4e-compose-signature
-    (concat
-     ""
-     ))
-
-(require 'smtpmail)
-(setq message-send-mail-function 'smtpmail-send-it
-   starttls-use-gnutls t
-   smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
-   smtpmail-auth-credentials
-        '(("smtp.gmail.com" 587 "goldenfermi@gmail.com" nil))
-   smtpmail-default-smtp-server "smtp.gmail.com"
-   smtpmail-smtp-server "smtp.gmail.com"
-   smtpmail-smtp-service 587)
-
-;; don't save message to Sent Messages, Gmail/IMAP takes care of this
-(setq mu4e-sent-messages-behavior 'delete)
-
-;; ;; don't keep message buffers around
-(setq message-kill-buffer-on-exit t)
+;; ;; (setq mu4e-maildir-shortcuts
+;; ;;     '( ("/INBOX"               . ?i)
+;; ;;        ("/[Gmail].Sent Mail"   . ?s)
+;; ;;        ("/[Gmail].Trash"       . ?t)
+;; ;;        ("/[Gmail].All Mail"    . ?a)))
 
 
-;; (setq mu4e-contexts
-;;  `( ,(make-mu4e-context
-;;      :name "personal"
-;;      :match-func (lambda (msg) (when msg
-;;        (string-prefix-p "/personal" (mu4e-message-field msg :maildir))))
-;;      :vars '(
-;; 	     (mu4e-drafts-folder . "/[Gmail].Drafts")
-;; 	     (mu4e-trash-folder . "/[Gmail].Trash")
-;; 	     (mu4e-refile-folder . "/[Gmail].Archive")
-;; 	     ))
-;;    ,(make-mu4e-context
-;;      :name "school"
-;;      :match-func (lambda (msg) (when msg
-;;        (string-prefix-p "/school" (mu4e-message-field msg :maildir))))
-;;      :vars '(
-;;    	     (mu4e-drafts-folder . "/[Gmail.Drafts")
-;;    	     (mu4e-trash-folder . "/[Gmail.Trash")
-;;    	     (mu4e-refile-folder . "/[Gmail].Archive")
-;;    	     ))
-;;    ))
+;; ;; (setq mu4e-get-mail-command "offlineimap -o")
 
-;; ;; refile messages according to the date
-;; (defun refile-to-date-folder (prefix msg)
-;;   "Refiles the message to the prefix.year.month folder according to 
-;; the message date. Creates the folder if necessary"
-;;   (let* ((time (mu4e-message-field-raw msg :date))
-;;          (mdir (if time (concat prefix (format-time-string ".%Y.%m" time)) prefix))
-;;          (fullpath (concat mu4e-maildir mdir)))
-;;     (if (mu4e-create-maildir-maybe fullpath) 
-;;         mdir
-;;       (mu4e-error "Folder does not exist"))))
+;; ;; ;; something about ourselves
+;; ;; (setq
+;; ;;    user-mail-address "goldenfermi@gmail.com"
+;; ;;    user-full-name  "Youngha Kim"
+;; ;;    mu4e-compose-signature
+;; ;;     (concat
+;; ;;      ""
+;; ;;      ))
 
-;; (defun refile-to-old-date-folder (msg)
-;;   "Refiles to old."
-;;   (refile-to-date-folder "/old" msg))
+;; ;; (require 'smtpmail)
+;; ;; (setq message-send-mail-function 'smtpmail-send-it
+;; ;;    starttls-use-gnutls t
+;; ;;    smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
+;; ;;    smtpmail-auth-credentials
+;; ;;         '(("smtp.gmail.com" 587 "goldenfermi@gmail.com" nil))
+;; ;;    smtpmail-default-smtp-server "smtp.gmail.com"
+;; ;;    smtpmail-smtp-server "smtp.gmail.com"
+;; ;;    smtpmail-smtp-service 587)
 
-;; ;; default
-;; (setq
-;;  mu4e-refile-folder 'refile-to-old-date-folder)
+;; ;; ;; don't save message to Sent Messages, Gmail/IMAP takes care of this
+;; ;; (setq mu4e-sent-messages-behavior 'delete)
+
+;; ;; ;; ;; don't keep message buffers around
+;; ;; (setq message-kill-buffer-on-exit t)
 
 
-;; setup some handy shortcuts
-;; you can quickly switch to your Inbox -- press ``ji''
-;; then, when you want archive some messages, move them to
-;; the 'All Mail' folder by pressing ``ma''.
+;; ;; ;; (setq mu4e-contexts
+;; ;; ;;  `( ,(make-mu4e-context
+;; ;; ;;      :name "personal"
+;; ;; ;;      :match-func (lambda (msg) (when msg
+;; ;; ;;        (string-prefix-p "/personal" (mu4e-message-field msg :maildir))))
+;; ;; ;;      :vars '(
+;; ;; ;; 	     (mu4e-drafts-folder . "/[Gmail].Drafts")
+;; ;; ;; 	     (mu4e-trash-folder . "/[Gmail].Trash")
+;; ;; ;; 	     (mu4e-refile-folder . "/[Gmail].Archive")
+;; ;; ;; 	     ))
+;; ;; ;;    ,(make-mu4e-context
+;; ;; ;;      :name "school"
+;; ;; ;;      :match-func (lambda (msg) (when msg
+;; ;; ;;        (string-prefix-p "/school" (mu4e-message-field msg :maildir))))
+;; ;; ;;      :vars '(
+;; ;; ;;    	     (mu4e-drafts-folder . "/[Gmail.Drafts")
+;; ;; ;;    	     (mu4e-trash-folder . "/[Gmail.Trash")
+;; ;; ;;    	     (mu4e-refile-folder . "/[Gmail].Archive")
+;; ;; ;;    	     ))
+;; ;; ;;    ))
+
+;; ;; ;; ;; refile messages according to the date
+;; ;; ;; (defun refile-to-date-folder (prefix msg)
+;; ;; ;;   "Refiles the message to the prefix.year.month folder according to 
+;; ;; ;; the message date. Creates the folder if necessary"
+;; ;; ;;   (let* ((time (mu4e-message-field-raw msg :date))
+;; ;; ;;          (mdir (if time (concat prefix (format-time-string ".%Y.%m" time)) prefix))
+;; ;; ;;          (fullpath (concat mu4e-maildir mdir)))
+;; ;; ;;     (if (mu4e-create-maildir-maybe fullpath) 
+;; ;; ;;         mdir
+;; ;; ;;       (mu4e-error "Folder does not exist"))))
+
+;; ;; ;; (defun refile-to-old-date-folder (msg)
+;; ;; ;;   "Refiles to old."
+;; ;; ;;   (refile-to-date-folder "/old" msg))
+
+;; ;; ;; ;; default
+;; ;; ;; (setq
+;; ;; ;;  mu4e-refile-folder 'refile-to-old-date-folder)
+
+
+;; ;; ;; setup some handy shortcuts
+;; ;; ;; you can quickly switch to your Inbox -- press ``ji''
+;; ;; ;; then, when you want archive some messages, move them to
+;; ;; ;; the 'All Mail' folder by pressing ``ma''.
 
 
 
-;; also, make sure the gnutls command line utils are installed
-;; package 'gnutls-bin' in Debian/Ubuntu
+;; ;; ;; also, make sure the gnutls command line utils are installed
+;; ;; ;; package 'gnutls-bin' in Debian/Ubuntu
 
 
-;; (defvar my-mu4e-account-alist
-;;   '(("personal"
-;;      (mu4e-sent-folder "/[Gmail].Sent Mail")
-;;      (user-mail-address "goldenfermi@gmail.com")
-;;      (smtpmail-smtp-user "goldenfermi")
-;;      (smtpmail-local-domain "gmail.com")
-;;      (smtpmail-default-smtp-server "smtp.gmail.com")
-;;      (smtpmail-smtp-server "smtp.gmail.com")
-;;      (smtpmail-smtp-service 587)
-;;      )
-;;     ;; ("school"
-;;     ;;  (mu4e-sent-folder "/[Gmail].Sent Mail")
-;;     ;;  (user-mail-address "younghak@student.unimelb.edu.au")
-;;     ;;  (smtpmail-smtp-user "younghak")
-;;     ;;  (smtpmail-local-domain "student.unimelb.edu.au")
-;;     ;;  (smtpmail-default-smtp-server "smtp.gmail.com")
-;;     ;;  (smtpmail-smtp-server "smtp.gmail.com")
-;;     ;;  (smtpmail-smtp-service 587)
-;;     ;;  )
+;; ;; ;; (defvar my-mu4e-account-alist
+;; ;; ;;   '(("personal"
+;; ;; ;;      (mu4e-sent-folder "/[Gmail].Sent Mail")
+;; ;; ;;      (user-mail-address "goldenfermi@gmail.com")
+;; ;; ;;      (smtpmail-smtp-user "goldenfermi")
+;; ;; ;;      (smtpmail-local-domain "gmail.com")
+;; ;; ;;      (smtpmail-default-smtp-server "smtp.gmail.com")
+;; ;; ;;      (smtpmail-smtp-server "smtp.gmail.com")
+;; ;; ;;      (smtpmail-smtp-service 587)
+;; ;; ;;      )
+;; ;; ;;     ;; ("school"
+;; ;; ;;     ;;  (mu4e-sent-folder "/[Gmail].Sent Mail")
+;; ;; ;;     ;;  (user-mail-address "younghak@student.unimelb.edu.au")
+;; ;; ;;     ;;  (smtpmail-smtp-user "younghak")
+;; ;; ;;     ;;  (smtpmail-local-domain "student.unimelb.edu.au")
+;; ;; ;;     ;;  (smtpmail-default-smtp-server "smtp.gmail.com")
+;; ;; ;;     ;;  (smtpmail-smtp-server "smtp.gmail.com")
+;; ;; ;;     ;;  (smtpmail-smtp-service 587)
+;; ;; ;;     ;;  )
      
-;;      ;; Include any other accounts here ...
-;;     ))
+;; ;; ;;      ;; Include any other accounts here ...
+;; ;; ;;     ))
 
-;; (defun my-mu4e-set-account ()
-;;   "Set the account for composing a message.
-;;    This function is taken from: 
-;;      https://www.djcbsoftware.nl/code/mu/mu4e/Multiple-accounts.html"
-;;   (let* ((account
-;;     (if mu4e-compose-parent-message
-;;         (let ((maildir (mu4e-message-field mu4e-compose-parent-message :maildir)))
-;;     (string-match "/\\(.*?\\)/" maildir)
-;;     (match-string 1 maildir))
-;;       (completing-read (format "Compose with account: (%s) "
-;;              (mapconcat #'(lambda (var) (car var))
-;;             my-mu4e-account-alist "/"))
-;;            (mapcar #'(lambda (var) (car var)) my-mu4e-account-alist)
-;;            nil t nil nil (caar my-mu4e-account-alist))))
-;;    (account-vars (cdr (assoc account my-mu4e-account-alist))))
-;;     (if account-vars
-;;   (mapc #'(lambda (var)
-;;       (set (car var) (cadr var)))
-;;         account-vars)
-;;       (error "No email account found"))))
-;; (add-hook 'mu4e-compose-pre-hook 'my-mu4e-set-account)
+;; ;; ;; (defun my-mu4e-set-account ()
+;; ;; ;;   "Set the account for composing a message.
+;; ;; ;;    This function is taken from: 
+;; ;; ;;      https://www.djcbsoftware.nl/code/mu/mu4e/Multiple-accounts.html"
+;; ;; ;;   (let* ((account
+;; ;; ;;     (if mu4e-compose-parent-message
+;; ;; ;;         (let ((maildir (mu4e-message-field mu4e-compose-parent-message :maildir)))
+;; ;; ;;     (string-match "/\\(.*?\\)/" maildir)
+;; ;; ;;     (match-string 1 maildir))
+;; ;; ;;       (completing-read (format "Compose with account: (%s) "
+;; ;; ;;              (mapconcat #'(lambda (var) (car var))
+;; ;; ;;             my-mu4e-account-alist "/"))
+;; ;; ;;            (mapcar #'(lambda (var) (car var)) my-mu4e-account-alist)
+;; ;; ;;            nil t nil nil (caar my-mu4e-account-alist))))
+;; ;; ;;    (account-vars (cdr (assoc account my-mu4e-account-alist))))
+;; ;; ;;     (if account-vars
+;; ;; ;;   (mapc #'(lambda (var)
+;; ;; ;;       (set (car var) (cadr var)))
+;; ;; ;;         account-vars)
+;; ;; ;;       (error "No email account found"))))
+;; ;; ;; (add-hook 'mu4e-compose-pre-hook 'my-mu4e-set-account)
 
-;; ;; don't save messages to Sent Messages, Gmail/IMAP takes care of this
-;; (setq mu4e-sent-messages-behavior 'delete)
+;; ;; ;; ;; don't save messages to Sent Messages, Gmail/IMAP takes care of this
+;; ;; ;; (setq mu4e-sent-messages-behavior 'delete)
 
 ;; ----------------------
 (custom-set-variables
@@ -693,19 +653,19 @@
  '(org-agenda-files
    (quote
     ("/home/yhk/Dropbox/gtd/gtd.org" "/home/yhk/Dropbox/gtd/inbox.org" "/home/yhk/Dropbox/gtd/someday.org" "/home/yhk/Dropbox/gtd/tickler.org" "/home/yhk/Dropbox/gtd/reference.org")))
- '(org-columns-default-format "%40ITEM(Task) %17Effort(Estimated Effort){:} %CLOCKSUM")
+ '(org-columns-default-format "%38ITEM(Details) %TAGS(Context) %7TODO(To Do) %17Effort(Estimated Effort){:} %6CLOCKSUM(Clock)")
  '(org-global-properties
    (quote
-    (("Effort_Allowed" . "00:05 00:10 00:20 00:30 00:45 01:00 02:00 03:00 04:00 05:00 06:00"))))
+    (("Effort_ALL" . "00:05 00:10 00:20 00:30 00:45 01:00 02:00 03:00 04:00 05:00 06:00"))))
  '(org-modules
    (quote
     (org-bbdb org-bibtex org-docview org-gnus org-habit org-info org-irc org-mhe org-rmail org-w3m)))
  '(org-tag-alist nil)
  '(org-todo-keywords
    (quote
-    ((sequence "CAPTURE(c)" "ACTIONABLE(a)" "INCUBATE(i)" "|" "DELEGATE(g)" "CANCELLED(x)")
-     (sequence "ORGANIZE(o)" "FOLLOWUP(f)" "REFLECT(r)")
-     (sequence "TODO(t)" "|" "DONE(d)"))))
+    ((sequence "CAPTURE(c)" "ACTIONABLE(a)" "INCUBATE(i)" "REDO(r)" "SPIN(s)" "|" "DELEGATE(g)" "CANCELLED(x)")
+     (sequence "ESTIMATE(e)" "MULTIPLIER(m)" "REFLECT(r)")
+     (sequence "TODO(t)" "LOG(l)" "|" "DONE(d)" "FAIL(f)"))))
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
    (quote
@@ -729,4 +689,7 @@
      (360 . "#8bc34a"))))
  '(vc-annotate-very-old-color nil))
 
-(put 'scroll-left 'disabled nil)
+;; (put 'scroll-left 'disabled nil)
+
+(provide 'init)
+;;; init.el ends here
