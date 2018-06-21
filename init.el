@@ -2,49 +2,37 @@
 ;;; Commentary:
 
 ;;; Code:
-(when (>= emacs-major-version 24)
-  (require 'package)
-  (package-initialize)
-  (add-to-list 'package-archives
-	       '("gnu" . "https://elpa.gnu.org/packages/") t)
-  (add-to-list 'package-archives
-	       '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-  (add-to-list 'package-archives
-               '("melpa" . "http://melpa.milkbox.net/packages/") t)
-  (add-to-list 'package-archives 
-	       '("org" . "http://orgmode.org/elpa/") t) ;; ord-mode repository
-  )
-(package-initialize)
-
-; Use "package" to install "use-package", a better package management and config system
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
-(eval-when-compile
-  (require 'use-package))
-
-;; (defvar myPackages
-;;   '(better-defaults
-;;     deeper-blue-theme))
-
-;; (mapc #'(lambda (package)
-;;     (unless (package-installed-p package)
-;;       (package-install package)))
-;;       myPackages)
-
-;; set $MATHPATH, $PATH, exec-path from shell on linux and os X
-(when (memq window-system '(mac ns x))
-  (exec-path-from-shell-initialize))
-
 ;; ----------------------------
 ;; BASIC CUSTOMIZATION
-;; hide the startup message
-(setq inhibit-startup-message t) 
-(setq inhibit-splash-screen t)
-(global-linum-mode t)
-(global-visual-line-mode 1)
-;; Enable transient mark mode
+;; global variables
+
+;; global variables
+(setq
+ inhibit-startup-screen t
+ create-lockfiles nil
+ make-backup-files nil
+ column-number-mode t
+ scroll-error-top-bottom t
+ show-paren-delay 0.5
+ use-package-always-ensure t
+ sentence-end-double-space nil
+ inhibit-startup-message t
+ inhibit-splash-creen t
+ global-linum-mode t
+ global-visual-line-mode 1)
+
+
+;; buffer local variables
+(setq-default
+ indent-tabs-mode nil
+ tab-width 4
+ c-basic-offset 4)
+
+;; themes
+(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
+
+;; modes
+(electric-indent-mode 0)
 (transient-mark-mode 1)
 
 ;; meta key from alt to cmd on Mac
@@ -54,6 +42,34 @@
 (global-set-key (kbd "C-?") 'help-command)
 (global-set-key (kbd "C-h") 'delete-backward-char)
 (global-set-key (kbd "M-h") 'backward-kill-word)
+(global-unset-key (kbd "C-z"))
+
+
+(require 'package)
+(package-initialize)
+(setq
+ package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
+                    ("org" . "http://orgmode.org/elpa/")
+                    ("melpa" . "http://melpa.org/packages/")
+                    ("melpa-stable" . "http://stable.melpa.org/packages/"))
+ package-archive-priorities '(("melpa-stable" . 1)))
+
+(package-initialize)
+(when (not package-archive-contents)
+  (package-refresh-contents)
+  (package-install 'use-package))
+(require 'use-package)
+
+(use-package scala-mode
+:interpreter
+("scala" . scala-mode))
+
+(add-to-list 'load-path "~/.emacs.d/lisp/")
+(load "swift-mode")
+
+;; set $MATHPATH, $PATH, exec-path from shell on linux and os X
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))
 
 
 ;; ;; Your path from shell needs to be seen by Emacs, and to make that easier, use the following elisp package.
@@ -80,10 +96,21 @@
 (setq custom-file (concat dotfiles-dir "custom.el"))
 (load custom-file 'noerror)
 
-
-
 (setq user-full-name "Youngha Kim")
 (setq user-mail-address "yh.kim@outlook.com")
+
+
+;;------------------------
+
+(when (eq system-type 'gnu/linux)
+
+  ;; default font size (point * 10)
+  
+  ;; (set-face-attribute 'default nil :family "Monaco")
+  (set-fontset-font t 'hangul (font-spec :name "NanumGothicCoding"))
+  
+  
+  )
 
 
 ;; -------
@@ -105,73 +132,6 @@
 (global-set-key "\M-l" 'windmove-right)
 (global-set-key "\M-i" 'windmove-up)
 (global-set-key "\M-k" 'windmove-down)
-
-;;------------------------
-
-(when (eq system-type 'gnu/linux)
-
-  ;; default font size (point * 10)
-  
-  ;; (set-face-attribute 'default nil :family "Monaco")
-  (set-fontset-font t 'hangul (font-spec :name "NanumGothicCoding"))
-  
-  
-  )
-
-;;---------------------------
-;; korean font
-
-
-;; (defun xftp (&optional frame)
-;;   "Return t if FRAME support XFT font backend."
-;;   (let ((xft-supported))
-;;     (mapc (lambda (x) (if (eq x 'xft) (setq xft-supported t)))
-;;           (frame-parameter frame 'font-backend))
-;;     xft-supported))
-
-;; (when (xftp)
-;;   (let ((fontset "fontset-default"))
-;;     (set-fontset-font fontset 'latin
-;;                       '("DejaVu Sans"  . "unicode-bmp"))
-;;     (set-fontset-font fontset 'hangul
-;;                       '("NanumGothicCoding" . "unicode-bmp"))
-;;     (set-face-attribute 'default nil
-;;                         :font fontset
-;;                         :height 110)))
-
-;; --------
-;; Shift the selected region right if distance is postive, left if
-;; negative
-
-(defun shift-region (distance)
-  (let ((mark (mark)))
-    (save-excursion
-      (indent-rigidly (region-beginning) (region-end) distance)
-      (push-mark mark t t)
-      ;; Tell the command loop not to deactivate the mark
-      ;; for transient mark mode
-      (setq deactivate-mark nil))))
-
-(defun shift-right ()
-  (interactive)
-  (shift-region 1))
-
-(defun shift-left ()
-  (interactive)
-  (shift-region -1))
-
-;; Bind (shift-right) and (shift-left) function to your favorite keys. I use
-;; the following so that Ctrl-Shift-Right Arrow moves selected text one 
-;; column to the right, Ctrl-Shift-Left Arrow moves selected text one
-;; column to the left:
-
-(global-set-key [C-S-right] 'shift-right)
-(global-set-key [C-S-left] 'shift-left)
-
-;; spaces instead of tabs when indenting
-(setq-default indent-tabs-mode nil)
-
-
 ;; ;; -------
 
 (projectile-mode)
@@ -324,6 +284,13 @@
 
 (add-hook 'python-mode-hook 'anaconda-mode)
 
+(require 'conda)
+(conda-env-initialize-interactive-shells)
+(conda-env-initialize-eshell)
+(conda-env-autoactivate-mode t)
+
+(custom-set-variables
+ '(conda-anaconda-home "~/anaconda3"))
 
 ;;;;org-mode configuration
 ;; Enable org-mode
@@ -344,6 +311,7 @@
    (emacs-lisp . t)
    (python . t)
    (shell . t)
+;;    (swift . t)
    ))
 
 ;; (setq org-confirm-babel-evaluate nil)
@@ -363,6 +331,12 @@
 	 "** %U - %^{Activity}  :TIMELOG:")
 	))
 
+(setq org-tag-alist '((:startgroup . nil)
+                      ("@work" . ?w) ("@home" . ?h) ("@school" . ?s) ("@sideproject" . ?p)
+                      (:endgroup . nil)
+                      ("dev" . ?d) ("bizdev" . ?b) ("admin" . ?m)))
+
+
 (setq org-refile-targets '((nil :maxlevel . 9)
                                 (org-agenda-files :maxlevel . 9)))
 (setq org-outline-path-complete-in-steps nil)         ; Refile in a single go
@@ -380,6 +354,10 @@
 
 ;; include entries from the Emacs diary into Org mode agenda
 (setq org-agenda-include-diary t)
+
+;; show sum of efforts for a day in org-agenda day title
+;; https://emacs.stackexchange.com/questions/21380/show-sum-of-efforts-for-a-day-in-org-agenda-day-title
+(setq org-columns-default-format "%60ITEM(Task) %6Effort(Estim){:}")
 
 ;; load markdown exporter automatically with org-mode
 (eval-after-load "org"
@@ -401,7 +379,7 @@
 (eval-after-load "org"
   '(require 'ox-md nil t))
 
-;; ;; org-mode to wordpress blog
+;; org-mode to wordpress blog
 ;; (setq org2blog/wp-blog-alist
 ;;       `(("wordpress"
 ;; 	 :url "https://younghak.wordpress.com/xmlrpc.php"
@@ -413,7 +391,7 @@
 ;;       )
 
 ;; (setq org2blog/wp-buffer-template
-;;       "--------------------------
+;; "--------------------------
 ;; #+TITLE: %s
 ;; #+DATE: %s
 ;; --------------------------\n")
@@ -442,8 +420,64 @@
 ;; (setq org-src-fontify-natively t)
 
 
-;; ;; ;; ;; org-jira setting
-;; ;; (setq jiralib-url "http://perforce.signalnco.com:8080/")
+;; 
+
+;; (el-get-bundle slack)
+(use-package slack
+  :commands (slack-start)
+  :init
+  (setq slack-buffer-emojify t) ;; if you want to enable emoji, default nil
+  (setq slack-prefer-current-team t)
+  :config
+  (slack-register-team
+   :name "signalnco"
+   :default t
+   :client-id "200312814944.380470304402"
+   :client-secret "604e5ee6dbfcba0b27eeba791d4e3588"
+   :token "xoxp-200312814944-310111957252-379922802273-ab89c11d70ac2f9dc4b6a656a0ee2f61"
+   :subscribed-channels '(test-rename rrrrr)
+   :full-and-display-names t
+   )
+
+  (slack-register-team
+   :name "test"
+   :client-id "200312814944.380470304402"
+   :client-secret "604e5ee6dbfcba0b27eeba791d4e3588"
+   :token "xoxp-200312814944-310111957252-379922802273-ab89c11d70ac2f9dc4b6a656a0ee2f61"
+   :subscribed-channels '(hoge fuga))
+
+  (evil-define-key 'normal slack-info-mode-map
+    ",u" 'slack-room-update-messages)
+  (evil-define-key 'normal slack-mode-map
+    ",c" 'slack-buffer-kill
+    ",ra" 'slack-message-add-reaction
+    ",rr" 'slack-message-remove-reaction
+    ",rs" 'slack-message-show-reaction-users
+    ",pl" 'slack-room-pins-list
+    ",pa" 'slack-message-pins-add
+    ",pr" 'slack-message-pins-remove
+    ",mm" 'slack-message-write-another-buffer
+    ",me" 'slack-message-edit
+    ",md" 'slack-message-delete
+    ",u" 'slack-room-update-messages
+    ",2" 'slack-message-embed-mention
+    ",3" 'slack-message-embed-channel
+    "\C-n" 'slack-buffer-goto-next-message
+    "\C-p" 'slack-buffer-goto-prev-message)
+   (evil-define-key 'normal slack-edit-message-mode-map
+    ",k" 'slack-message-cancel-edit
+    ",s" 'slack-message-send-from-buffer
+    ",2" 'slack-message-embed-mention
+    ",3" 'slack-message-embed-channel))
+
+(use-package alert
+  :commands (alert)
+  :init
+  (setq alert-default-style 'notifier))
+
+
+;; ;; org-jira setting
+(setq jiralib-url "http://perforce.signalnco.com:8080/")
 ;; ;; ;; (define-key org-jira-map (kbd "C-c pg") 'org-jira-get-projects)
 ;; ;; ;; (define-key org-jira-map (kbd "C-c ib") 'org-jira-browse-issue)
 ;; ;; ;; (define-key org-jira-map (kbd "C-c ig") 'org-jira-get-issues)
@@ -462,179 +496,169 @@
 ;; ;; ;; (define-key org-jira-map (kbd "C-c wu") 'org-jira-update-worklogs-from-org-clocks)
 ;; ;; ;; (define-key org-jira-map (kbd "C-c tj") 'org-jira-todo-to-jira)
 ;; ;; ;; (define-key org-jira-map (kbd "C-c if") 'org-jira-get-issues-by-fixversion)
-;; ;; ;; (defconst org-jira-progress-issue-flow
-;; ;; ;;   '(("To Do" . "In Progress"
-;; ;; ;;      ("In Progress" . "Done"))))
-;; ;; ;; (defconst org-jira-progress-issue-flow
-;; ;; ;;   '(("To Do" . "Start Progress")
-;; ;; ;;     ("In Development" . "Ready For Review")
-;; ;; ;;     ("Code Review" . "Done")
-;; ;; ;;     ("Done" . "Reopen")))
 
 
-;; ;; change font for done task
-;; (setq org-fontify-done-headline t)
+;; change font for done task
+(setq org-fontify-done-headline t)
+
+;; mu4e configuration
+;; mail mu4e
+(add-to-list 'load-path "/opt/mu/mu4e")
+(require 'mu4e)
+(setq mail-user-agent 'mu4e-user-agent)
+(setq mu4e-maildir "~/Maildir")
+
+(setq mu4e-drafts-folder "/[Gmail].Drafts")
+(setq mu4e-sent-folder   "/[Gmail].Sent Mail")
+(setq mu4e-trash-folder  "/[Gmail].Trash")
 
 
-;; ;; ;; mu4e configuration
-;; ;; ;; mail mu4e
-;; ;; (add-to-list 'load-path "/opt/mu/mu4e")
-;; ;; (require 'mu4e)
-;; ;; (setq mail-user-agent 'mu4e-user-agent)
-;; ;; (setq mu4e-maildir "~/Maildir")
+;; don't save message to Sent Messages, Gmail/IMAP takes care of this
+(setq mu4e-sent-messages-behavior 'delete)
+
+;; (See the documentation for `mu4e-sent-messages-behavior' if you have
+;; additional non-Gmail addresses and want assign them different
+;; behavior.)
+
+;; setup some handy shortcuts
+;; you can quickly switch to your Inbox -- press ``ji''
+;; then, when you want archive some messages, move them to
+;; the 'All Mail' folder by pressing ``ma''.
+
+(setq mu4e-maildir-shortcuts
+    '( ("/INBOX"               . ?i)
+       ("/[Gmail].Sent Mail"   . ?s)
+       ("/[Gmail].Trash"       . ?t)
+       ("/[Gmail].All Mail"    . ?a)))
 
 
-;; ;; (setq mu4e-drafts-folder "/[Gmail].Drafts")
-;; ;; (setq mu4e-sent-folder   "/[Gmail].Sent Mail")
-;; ;; (setq mu4e-trash-folder  "/[Gmail].Trash")
+(setq mu4e-get-mail-command "offlineimap -o")
+
+;; something about ourselves
+(setq
+   user-mail-address "goldenfermi@gmail.com"
+   user-full-name  "Youngha Kim"
+   mu4e-compose-signature
+    (concat
+     ""
+     ))
+
+(require 'smtpmail)
+(setq message-send-mail-function 'smtpmail-send-it
+   starttls-use-gnutls t
+   smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
+   smtpmail-auth-credentials
+        '(("smtp.gmail.com" 587 "marcus.yh.kim@gmail.com" nil))
+   smtpmail-default-smtp-server "smtp.gmail.com"
+   smtpmail-smtp-server "smtp.gmail.com"
+   smtpmail-smtp-service 587)
+
+;; don't save message to Sent Messages, Gmail/IMAP takes care of this
+(setq mu4e-sent-messages-behavior 'delete)
+
+;; ;; don't keep message buffers around
+(setq message-kill-buffer-on-exit t)
 
 
-;; ;; ;; don't save message to Sent Messages, Gmail/IMAP takes care of this
-;; ;; (setq mu4e-sent-messages-behavior 'delete)
+(setq mu4e-contexts
+ `( ,(make-mu4e-context
+     :name "personal"
+     :match-func (lambda (msg) (when msg
+       (string-prefix-p "/personal" (mu4e-message-field msg :maildir))))
+     :vars '(
+	     (mu4e-drafts-folder . "/[Gmail].Drafts")
+	     (mu4e-trash-folder . "/[Gmail].Trash")
+	     (mu4e-refile-folder . "/[Gmail].Archive")
+	     ))
+   ,(make-mu4e-context
+     :name "school"
+     :match-func (lambda (msg) (when msg
+       (string-prefix-p "/school" (mu4e-message-field msg :maildir))))
+     :vars '(
+   	     (mu4e-drafts-folder . "/[Gmail.Drafts")
+   	     (mu4e-trash-folder . "/[Gmail.Trash")
+   	     (mu4e-refile-folder . "/[Gmail].Archive")
+   	     ))
+   ))
 
-;; ;; ;; (See the documentation for `mu4e-sent-messages-behavior' if you have
-;; ;; ;; additional non-Gmail addresses and want assign them different
-;; ;; ;; behavior.)
+;; ;; refile messages according to the date
+;; (defun refile-to-date-folder (prefix msg)
+;;   "Refiles the message to the prefix.year.month folder according to 
+;; the message date. Creates the folder if necessary"
+;;   (let* ((time (mu4e-message-field-raw msg :date))
+;;          (mdir (if time (concat prefix (format-time-string ".%Y.%m" time)) prefix))
+;;          (fullpath (concat mu4e-maildir mdir)))
+;;     (if (mu4e-create-maildir-maybe fullpath) 
+;;         mdir
+;;       (mu4e-error "Folder does not exist"))))
 
-;; ;; ;; setup some handy shortcuts
-;; ;; ;; you can quickly switch to your Inbox -- press ``ji''
-;; ;; ;; then, when you want archive some messages, move them to
-;; ;; ;; the 'All Mail' folder by pressing ``ma''.
+;; (defun refile-to-old-date-folder (msg)
+;;   "Refiles to old."
+;;   (refile-to-date-folder "/old" msg))
 
-;; ;; (setq mu4e-maildir-shortcuts
-;; ;;     '( ("/INBOX"               . ?i)
-;; ;;        ("/[Gmail].Sent Mail"   . ?s)
-;; ;;        ("/[Gmail].Trash"       . ?t)
-;; ;;        ("/[Gmail].All Mail"    . ?a)))
-
-
-;; ;; (setq mu4e-get-mail-command "offlineimap -o")
-
-;; ;; ;; something about ourselves
-;; ;; (setq
-;; ;;    user-mail-address "goldenfermi@gmail.com"
-;; ;;    user-full-name  "Youngha Kim"
-;; ;;    mu4e-compose-signature
-;; ;;     (concat
-;; ;;      ""
-;; ;;      ))
-
-;; ;; (require 'smtpmail)
-;; ;; (setq message-send-mail-function 'smtpmail-send-it
-;; ;;    starttls-use-gnutls t
-;; ;;    smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
-;; ;;    smtpmail-auth-credentials
-;; ;;         '(("smtp.gmail.com" 587 "goldenfermi@gmail.com" nil))
-;; ;;    smtpmail-default-smtp-server "smtp.gmail.com"
-;; ;;    smtpmail-smtp-server "smtp.gmail.com"
-;; ;;    smtpmail-smtp-service 587)
-
-;; ;; ;; don't save message to Sent Messages, Gmail/IMAP takes care of this
-;; ;; (setq mu4e-sent-messages-behavior 'delete)
-
-;; ;; ;; ;; don't keep message buffers around
-;; ;; (setq message-kill-buffer-on-exit t)
+;; ;; default
+;; (setq
+;;  mu4e-refile-folder 'refile-to-old-date-folder)
 
 
-;; ;; ;; (setq mu4e-contexts
-;; ;; ;;  `( ,(make-mu4e-context
-;; ;; ;;      :name "personal"
-;; ;; ;;      :match-func (lambda (msg) (when msg
-;; ;; ;;        (string-prefix-p "/personal" (mu4e-message-field msg :maildir))))
-;; ;; ;;      :vars '(
-;; ;; ;; 	     (mu4e-drafts-folder . "/[Gmail].Drafts")
-;; ;; ;; 	     (mu4e-trash-folder . "/[Gmail].Trash")
-;; ;; ;; 	     (mu4e-refile-folder . "/[Gmail].Archive")
-;; ;; ;; 	     ))
-;; ;; ;;    ,(make-mu4e-context
-;; ;; ;;      :name "school"
-;; ;; ;;      :match-func (lambda (msg) (when msg
-;; ;; ;;        (string-prefix-p "/school" (mu4e-message-field msg :maildir))))
-;; ;; ;;      :vars '(
-;; ;; ;;    	     (mu4e-drafts-folder . "/[Gmail.Drafts")
-;; ;; ;;    	     (mu4e-trash-folder . "/[Gmail.Trash")
-;; ;; ;;    	     (mu4e-refile-folder . "/[Gmail].Archive")
-;; ;; ;;    	     ))
-;; ;; ;;    ))
-
-;; ;; ;; ;; refile messages according to the date
-;; ;; ;; (defun refile-to-date-folder (prefix msg)
-;; ;; ;;   "Refiles the message to the prefix.year.month folder according to 
-;; ;; ;; the message date. Creates the folder if necessary"
-;; ;; ;;   (let* ((time (mu4e-message-field-raw msg :date))
-;; ;; ;;          (mdir (if time (concat prefix (format-time-string ".%Y.%m" time)) prefix))
-;; ;; ;;          (fullpath (concat mu4e-maildir mdir)))
-;; ;; ;;     (if (mu4e-create-maildir-maybe fullpath) 
-;; ;; ;;         mdir
-;; ;; ;;       (mu4e-error "Folder does not exist"))))
-
-;; ;; ;; (defun refile-to-old-date-folder (msg)
-;; ;; ;;   "Refiles to old."
-;; ;; ;;   (refile-to-date-folder "/old" msg))
-
-;; ;; ;; ;; default
-;; ;; ;; (setq
-;; ;; ;;  mu4e-refile-folder 'refile-to-old-date-folder)
-
-
-;; ;; ;; setup some handy shortcuts
-;; ;; ;; you can quickly switch to your Inbox -- press ``ji''
-;; ;; ;; then, when you want archive some messages, move them to
-;; ;; ;; the 'All Mail' folder by pressing ``ma''.
+;; setup some handy shortcuts
+;; you can quickly switch to your Inbox -- press ``ji''
+;; then, when you want archive some messages, move them to
+;; the 'All Mail' folder by pressing ``ma''.
 
 
 
-;; ;; ;; also, make sure the gnutls command line utils are installed
-;; ;; ;; package 'gnutls-bin' in Debian/Ubuntu
+;; also, make sure the gnutls command line utils are installed
+;; package 'gnutls-bin' in Debian/Ubuntu
 
 
-;; ;; ;; (defvar my-mu4e-account-alist
-;; ;; ;;   '(("personal"
-;; ;; ;;      (mu4e-sent-folder "/[Gmail].Sent Mail")
-;; ;; ;;      (user-mail-address "goldenfermi@gmail.com")
-;; ;; ;;      (smtpmail-smtp-user "goldenfermi")
-;; ;; ;;      (smtpmail-local-domain "gmail.com")
-;; ;; ;;      (smtpmail-default-smtp-server "smtp.gmail.com")
-;; ;; ;;      (smtpmail-smtp-server "smtp.gmail.com")
-;; ;; ;;      (smtpmail-smtp-service 587)
-;; ;; ;;      )
-;; ;; ;;     ;; ("school"
-;; ;; ;;     ;;  (mu4e-sent-folder "/[Gmail].Sent Mail")
-;; ;; ;;     ;;  (user-mail-address "younghak@student.unimelb.edu.au")
-;; ;; ;;     ;;  (smtpmail-smtp-user "younghak")
-;; ;; ;;     ;;  (smtpmail-local-domain "student.unimelb.edu.au")
-;; ;; ;;     ;;  (smtpmail-default-smtp-server "smtp.gmail.com")
-;; ;; ;;     ;;  (smtpmail-smtp-server "smtp.gmail.com")
-;; ;; ;;     ;;  (smtpmail-smtp-service 587)
-;; ;; ;;     ;;  )
+;; (defvar my-mu4e-account-alist
+;;   '(("personal"
+;;      (mu4e-sent-folder "/[Gmail].Sent Mail")
+;;      (user-mail-address "goldenfermi@gmail.com")
+;;      (smtpmail-smtp-user "goldenfermi")
+;;      (smtpmail-local-domain "gmail.com")
+;;      (smtpmail-default-smtp-server "smtp.gmail.com")
+;;      (smtpmail-smtp-server "smtp.gmail.com")
+;;      (smtpmail-smtp-service 587)
+;;      )
+;;     ;; ("school"
+;;     ;;  (mu4e-sent-folder "/[Gmail].Sent Mail")
+;;     ;;  (user-mail-address "younghak@student.unimelb.edu.au")
+;;     ;;  (smtpmail-smtp-user "younghak")
+;;     ;;  (smtpmail-local-domain "student.unimelb.edu.au")
+;;     ;;  (smtpmail-default-smtp-server "smtp.gmail.com")
+;;     ;;  (smtpmail-smtp-server "smtp.gmail.com")
+;;     ;;  (smtpmail-smtp-service 587)
+;;     ;;  )
      
-;; ;; ;;      ;; Include any other accounts here ...
-;; ;; ;;     ))
+;;      ;; Include any other accounts here ...
+;;     ))
 
-;; ;; ;; (defun my-mu4e-set-account ()
-;; ;; ;;   "Set the account for composing a message.
-;; ;; ;;    This function is taken from: 
-;; ;; ;;      https://www.djcbsoftware.nl/code/mu/mu4e/Multiple-accounts.html"
-;; ;; ;;   (let* ((account
-;; ;; ;;     (if mu4e-compose-parent-message
-;; ;; ;;         (let ((maildir (mu4e-message-field mu4e-compose-parent-message :maildir)))
-;; ;; ;;     (string-match "/\\(.*?\\)/" maildir)
-;; ;; ;;     (match-string 1 maildir))
-;; ;; ;;       (completing-read (format "Compose with account: (%s) "
-;; ;; ;;              (mapconcat #'(lambda (var) (car var))
-;; ;; ;;             my-mu4e-account-alist "/"))
-;; ;; ;;            (mapcar #'(lambda (var) (car var)) my-mu4e-account-alist)
-;; ;; ;;            nil t nil nil (caar my-mu4e-account-alist))))
-;; ;; ;;    (account-vars (cdr (assoc account my-mu4e-account-alist))))
-;; ;; ;;     (if account-vars
-;; ;; ;;   (mapc #'(lambda (var)
-;; ;; ;;       (set (car var) (cadr var)))
-;; ;; ;;         account-vars)
-;; ;; ;;       (error "No email account found"))))
-;; ;; ;; (add-hook 'mu4e-compose-pre-hook 'my-mu4e-set-account)
+;; (defun my-mu4e-set-account ()
+;;   "Set the account for composing a message.
+;;    This function is taken from: 
+;;      https://www.djcbsoftware.nl/code/mu/mu4e/Multiple-accounts.html"
+;;   (let* ((account
+;;     (if mu4e-compose-parent-message
+;;         (let ((maildir (mu4e-message-field mu4e-compose-parent-message :maildir)))
+;;     (string-match "/\\(.*?\\)/" maildir)
+;;     (match-string 1 maildir))
+;;       (completing-read (format "Compose with account: (%s) "
+;;              (mapconcat #'(lambda (var) (car var))
+;;             my-mu4e-account-alist "/"))
+;;            (mapcar #'(lambda (var) (car var)) my-mu4e-account-alist)
+;;            nil t nil nil (caar my-mu4e-account-alist))))
+;;    (account-vars (cdr (assoc account my-mu4e-account-alist))))
+;;     (if account-vars
+;;   (mapc #'(lambda (var)
+;;       (set (car var) (cadr var)))
+;;         account-vars)
+;;       (error "No email account found"))))
+;; (add-hook 'mu4e-compose-pre-hook 'my-mu4e-set-account)
 
-;; ;; ;; ;; don't save messages to Sent Messages, Gmail/IMAP takes care of this
-;; ;; ;; (setq mu4e-sent-messages-behavior 'delete)
+;; ;; don't save messages to Sent Messages, Gmail/IMAP takes care of this
+;; (setq mu4e-sent-messages-behavior 'delete)
 
 ;; ----------------------
 (custom-set-variables
@@ -646,7 +670,7 @@
    [default bold shadow italic underline bold bold-italic bold])
  '(ansi-color-names-vector
    ["black" "#d55e00" "#009e73" "#f8ec59" "#0072b2" "#cc79a7" "#56b4e9" "white"])
- '(custom-enabled-themes (quote (deeper-blue)))
+ '(custom-enabled-themes (quote (zenburn)))
  '(default-input-method "korean-hangul")
  '(fci-rule-color "#37474f")
  '(hl-sexp-background-color "#1c1f26")
@@ -660,12 +684,11 @@
  '(org-modules
    (quote
     (org-bbdb org-bibtex org-docview org-gnus org-habit org-info org-irc org-mhe org-rmail org-w3m)))
- '(org-tag-alist nil)
  '(org-todo-keywords
    (quote
-    ((sequence "CAPTURE(c)" "ACTIONABLE(a)" "INCUBATE(i)" "REDO(r)" "SPIN(s)" "|" "DELEGATE(g)" "CANCELLED(x)")
-     (sequence "ESTIMATE(e)" "MULTIPLIER(m)" "REFLECT(r)")
-     (sequence "TODO(t)" "LOG(l)" "|" "DONE(d)" "FAIL(f)"))))
+    ((sequence "CAPTURE(c)" "CLARIFY(l)" "INCUBATE(i)" "|" "DELEGATE(g)" "CANCELLED(x)")
+     (sequence "ORGANIZE(o)" "REFLECT(r)")
+     (sequence "TODO(t)" "|" "DONE(d)" "FAIL(f)"))))
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
    (quote
