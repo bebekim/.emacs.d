@@ -28,8 +28,10 @@
     web-mode
     emmet-mode
     virtualenvwrapper
+    elpy
     flycheck
     py-autopep8
+    ein
     neotree))
 
 
@@ -40,16 +42,6 @@
 
 (setq tramp-default-method "ssh")
 
-
-;;; package --- Summary
-;;; Commentary:
-
-;;; Code:
-;; ----------------------------
-;; BASIC CUSTOMIZATION
-;; global variables
-
-;; global variables
 (setq
  inhibit-startup-screen t
  create-lockfiles nil
@@ -91,7 +83,6 @@
 ;; scheme
 (require 'xscheme)
 
-
 (setenv "MITSCHEME_LIBRARY_PATH"
         "/Applications/MIT-Scheme.app/Contents/Resources")
 
@@ -99,6 +90,32 @@
       show-paren-style 'parentheses)
 (show-paren-mode 1)
 (setq scheme-program-name "/usr/local/bin/mit-scheme")
+
+;; python
+(use-package elpy
+  :ensure t
+  :defer t
+  :init
+  (advice-add 'python-mode :before 'elpy-enable))
+
+
+
+;; ;; Use IPython for REPL
+;; (setq python-shell-interpreter "jupyter"
+;;       python-shell-interpreter-args "console --simple-prompt"
+;;       python-shell-prompt-detect-failure-warning nil)
+;; (add-to-list 'python-shell-completion-native-disabled-interpreters
+;;              "jupyter")
+
+
+;; ;; Enable Flycheck
+;; (when (require 'flycheck nil t)
+;;   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+;;   (add-hook 'elpy-mode-hook 'flycheck-mode))
+
+;; ;; Enable autopep8
+;; (require 'py-autopep8)
+;; (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
 
 
 ;; set $MATHPATH, $PATH, exec-path from shell on linux and os X
@@ -280,7 +297,7 @@
      (sequence "TODO(t)" "|" "DONE(d)"))))
  '(package-selected-packages
    (quote
-    (csharp-mode flycheck-ledger ledger-mode pipenv magit-todos magit-org-todos all-the-icons py-autopep8 conda ein highlight-indentation rjsx-mode indium json-mode use-package anaconda-mode yasnippet cl-lib s eclim meghanada feature-mode neotree material-theme better-defaults docker-compose-mode docker virtualenvwrapper auto-complete js2-mode web-mode php-mode eide list-packages-ext helm-dash flymake-jslint flymake-css web-beautify emmet-mode magit racket-mode org-pomodoro projectile org markdown-mode exec-path-from-shell company)))
+    (elpy csharp-mode flycheck-ledger ledger-mode pipenv magit-todos magit-org-todos all-the-icons py-autopep8 conda ein highlight-indentation rjsx-mode indium json-mode use-package anaconda-mode yasnippet cl-lib s eclim meghanada feature-mode neotree material-theme better-defaults docker-compose-mode docker virtualenvwrapper auto-complete js2-mode web-mode php-mode eide list-packages-ext helm-dash flymake-jslint flymake-css web-beautify emmet-mode magit racket-mode org-pomodoro projectile org markdown-mode exec-path-from-shell company)))
  '(scheme-program-name "mit-scheme")
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
@@ -315,6 +332,9 @@
 (require 'auto-complete-config)
 (ac-config-default)
 
+;; magit
+(global-set-key (kbd "C-x g") 'magit-status)
+
 ;;;;org-mode configuration
 ;; Enable org-mode
 (require 'org)
@@ -323,28 +343,28 @@
 (add-hook 'org-mode-hook 'turn-on-font-lock)
 
 ;; The above is the default in recent emacs
-(setq org-directory "~/Dropbox/org")
+(setq org-directory "~/Documents/org")
 (setq org-log-done t)
-(setq org-agenda-files (list "~/Dropbox/org/inbox.org"
-                             "~/Dropbox/org/gtd.org" 
-                             "~/Dropbox/org/someday.org"
-			     "~/Dropbox/org/tickler.org"))
-(setq org-default-notes-file "~/Dropbox/org/journal.org")
+(setq org-agenda-files (list "~/Documents/org/inbox.org"
+                             "~/Documents/org/gtd.org" 
+                             "~/Documents/org/someday.org"
+			     "~/Documents/org/tickler.org"))
+(setq org-default-notes-file "~/Documents/org/journal.org")
 (setq org-capture-templates
       '(
-        ("j" "Journal" entry (file+datetree "~/Dropbox/org/journal.org")
+        ("j" "Journal" entry (file+datetree "~/Documents/org/journal.org")
          "* %?\nEntered on %U\n  %i\n  %a")
-        ("l" "Link" entry (file+headline "~/Dropbox/org/link.org" "Links")
+        ("l" "Link" entry (file+headline "~/Documents/org/link.org" "Links")
          "* %? %^L %^g \n%T" :prepend t)
-        ("c" "Capture" entry (file+headline "~/Dropbox/org/inbox.org" "Tasks")
+        ("c" "Capture" entry (file+headline "~/Documents/org/inbox.org" "Tasks")
          "* CAPTURE %i%?")
-        ("T" "Tickler" entry (file+headline "~/Dropbox/org/tickler.org" "Tickler")
+        ("T" "Tickler" entry (file+headline "~/Documents/org/tickler.org" "Tickler")
          "* %i%? \n %U")))
 
-(setq org-refile-targets '(("~/Dropbox/org/gtd.org" :maxlevel . 3)
-                           ("~/Dropbox/org/link.org" :maxlevel . 3)
-                           ("~/Dropbox/org/someday.org" :level . 2)
-                           ("~/Dropbox/org/tickler.org" :maxlevel . 2)))
+(setq org-refile-targets '(("~/Documents/org/gtd.org" :maxlevel . 3)
+                           ("~/Documents/org/link.org" :maxlevel . 3)
+                           ("~/Documents/org/someday.org" :level . 2)
+                           ("~/Documents/org/tickler.org" :maxlevel . 2)))
 
 
 ;; The following lines are always needed.  Choose your own keys.
@@ -399,6 +419,8 @@
    (python . t)
    ))
 
+
+
 (setq org-confirm-babel-evaluate nil)
 (add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
 (add-hook 'org-mode-hook 'org-display-inline-images)
@@ -441,7 +463,6 @@
 (ess-toggle-S-assign nil)
 (ess-toggle-underscore nil) ; leave underscore key alone!
 
-;; python
 
 ;; emacs-ide
 ;; (eide-start)
