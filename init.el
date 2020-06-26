@@ -98,7 +98,16 @@
   :init
   (advice-add 'python-mode :before 'elpy-enable))
 
-
+;; python set up
+;; Virtualenv wrapper
+;; works with python.el, default on emacs 24.3 and up
+(require 'virtualenvwrapper)
+(venv-initialize-interactive-shells) ;; if you want interactive shell support
+(venv-initialize-eshell) ;; if you want eshell support
+;; note that setting `venv-location` is not necessary if you
+;; use the default location (`~/.virtualenvs`), or if the
+;; the environment variable `WORKON_HOME` points to the right place
+(setq venv-location "~/Envs")
 
 ;; ;; Use IPython for REPL
 ;; (setq python-shell-interpreter "jupyter"
@@ -338,7 +347,7 @@
 ;;;;org-mode configuration
 ;; Enable org-mode
 (require 'org)
-(add-to-list 'load-path "/Users/yhk/.emacs.d/lisp")
+(add-to-list 'load-path "~/.emacs.d/lisp")
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 (add-hook 'org-mode-hook 'turn-on-font-lock)
 
@@ -363,8 +372,9 @@
 
 (setq org-refile-targets '(("~/Documents/org/gtd.org" :maxlevel . 3)
                            ("~/Documents/org/link.org" :maxlevel . 3)
-                           ("~/Documents/org/someday.org" :level . 2)
-                           ("~/Documents/org/tickler.org" :maxlevel . 2)))
+                           ("~/Documents/org/someday.org" :level . 3)
+                           ("~/Documents/org/indie.org" :level . 3)
+                           ("~/Documents/org/tickler.org" :maxlevel . 3)))
 
 
 ;; The following lines are always needed.  Choose your own keys.
@@ -562,15 +572,6 @@
 
 ;; --------------------------------------------
 
-;; python set up
-;; Virtualenv wrapper
-;; works with python.el, default on emacs 24.3 and up
-;; (require 'virtualenvwrapper)
-;; (venv-initialize-interactive-shells) ;; if you want interactive shell support
-;; (venv-initialize-eshell) ;; if you want eshell support
-;; ;; note that setting `venv-location` is not necessary if you
-;; use the default location (`~/.virtualenvs`), or if the
-;; the environment variable `WORKON_HOME` points to the right place
 
 ;; ;; enable anaconda-mode
 ;; (require 'conda)
