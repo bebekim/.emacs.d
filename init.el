@@ -5,7 +5,7 @@
   (add-to-list 'package-archives
 	       '("gnu" . "https://elpa.gnu.org/packages/") t)
   (add-to-list 'package-archives
-	       '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+	             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
   (add-to-list 'package-archives
                '("melpa" . "http://melpa.milkbox.net/packages/") t)
   (add-to-list 'package-archives 
@@ -26,6 +26,8 @@
     company
     projectile
     web-mode
+    conda
+    org-jira
     emmet-mode
     virtualenvwrapper
     elpy
@@ -108,6 +110,19 @@
 ;; use the default location (`~/.virtualenvs`), or if the
 ;; the environment variable `WORKON_HOME` points to the right place
 (setq venv-location "~/Envs")
+
+;; enable anaconda-mode
+(require 'conda)
+(conda-env-initialize-interactive-shells)
+(conda-env-initialize-eshell)
+(conda-env-autoactivate-mode t)
+(setq
+ conda-env-home-directory (expand-file-name "~/opt/miniconda3/")
+ conda-env-subdirectory "envs")
+(add-hook 'python-mode-hook 'anaconda-mode)
+(add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+
+
 
 ;; ;; Use IPython for REPL
 ;; (setq python-shell-interpreter "jupyter"
@@ -287,6 +302,7 @@
  ;; If there is more than one, they won't work right.
  '(ansi-color-faces-vector
    [default bold shadow italic underline bold bold-italic bold])
+ '(conda-anaconda-home "~/opt/miniconda3/envs")
  '(custom-enabled-themes (quote (misterioso)))
  '(default-input-method "korean-hangul")
  '(fci-rule-color "#37474f")
@@ -306,7 +322,7 @@
      (sequence "TODO(t)" "|" "DONE(d)"))))
  '(package-selected-packages
    (quote
-    (elpy csharp-mode flycheck-ledger ledger-mode pipenv magit-todos magit-org-todos all-the-icons py-autopep8 conda ein highlight-indentation rjsx-mode indium json-mode use-package anaconda-mode yasnippet cl-lib s eclim meghanada feature-mode neotree material-theme better-defaults docker-compose-mode docker virtualenvwrapper auto-complete js2-mode web-mode php-mode eide list-packages-ext helm-dash flymake-jslint flymake-css web-beautify emmet-mode magit racket-mode org-pomodoro projectile org markdown-mode exec-path-from-shell company)))
+    (virtualenv hy-mode org-jira elpy csharp-mode flycheck-ledger ledger-mode pipenv magit-todos magit-org-todos all-the-icons py-autopep8 conda ein highlight-indentation rjsx-mode indium json-mode use-package anaconda-mode yasnippet cl-lib s eclim meghanada feature-mode neotree material-theme better-defaults docker-compose-mode docker virtualenvwrapper auto-complete js2-mode web-mode php-mode eide list-packages-ext helm-dash flymake-jslint flymake-css web-beautify emmet-mode magit racket-mode org-pomodoro projectile org markdown-mode exec-path-from-shell company)))
  '(scheme-program-name "mit-scheme")
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
@@ -354,6 +370,7 @@
 ;; The above is the default in recent emacs
 (setq org-directory "~/Documents/org")
 (setq org-log-done t)
+(setq initial-buffer-choice "~/Documents/org/gtd.org")
 (setq org-agenda-files (list "~/Documents/org/inbox.org"
                              "~/Documents/org/gtd.org" 
                              "~/Documents/org/someday.org"
@@ -372,8 +389,8 @@
 
 (setq org-refile-targets '(("~/Documents/org/gtd.org" :maxlevel . 3)
                            ("~/Documents/org/link.org" :maxlevel . 3)
-                           ("~/Documents/org/someday.org" :level . 3)
-                           ("~/Documents/org/indie.org" :level . 3)
+                           ("~/Documents/org/someday.org" :maxlevel . 3)
+                           ("~/Documents/org/indie.org" :maxlevel . 3)
                            ("~/Documents/org/tickler.org" :maxlevel . 3)))
 
 
@@ -573,21 +590,13 @@
 ;; --------------------------------------------
 
 
-;; ;; enable anaconda-mode
-;; (require 'conda)
-;; (conda-env-initialize-interactive-shells)
-;; (conda-env-initialize-eshell)
-;; (conda-env-autoactivate-mode t)
-
-;; (custom-set-variables
-;;  '(conda-anaconda-home "~/anaconda3"))
-
-;; (add-hook 'python-mode-hook 'anaconda-mode)
-;; (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
 
 
 ;; ---------------------------------------------
- 
+
+(setq jiralib-url "https://yhakim.atlassian.net")
+
+;; ------------------
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
