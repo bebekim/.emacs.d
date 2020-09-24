@@ -5,12 +5,13 @@
   (add-to-list 'package-archives
 	       '("gnu" . "https://elpa.gnu.org/packages/") t)
   (add-to-list 'package-archives
-	             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+               '("marmalade" . "http://marmalade-repo.org/packages/"))
   (add-to-list 'package-archives
-               '("melpa" . "http://melpa.milkbox.net/packages/") t)
+               '("melpa" . "https://melpa.org/packages/") t)
   (add-to-list 'package-archives 
 	       '("org" . "http://orgmode.org/elpa/") t) ;; ord-mode repository
   )
+
 
 ; Use "package" to install "use-package", a better package management and config system
 (unless (package-installed-p 'use-package)
@@ -140,6 +141,15 @@
 ;; ;; Enable autopep8
 ;; (require 'py-autopep8)
 ;; (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
+
+(require 'flymake-ruby)
+(add-hook 'ruby-mode-hook 'flymake-ruby-load)
+
+(setq ruby-deep-indent-paren nil)
+
+(global-set-key (kbd "C-c r r") 'inf-ruby)
+(global-set-key (kbd "C-c r a") 'rvm-activate-corresponding-ruby)
+
 
 
 ;; set $MATHPATH, $PATH, exec-path from shell on linux and os X
@@ -322,7 +332,7 @@
      (sequence "TODO(t)" "|" "DONE(d)"))))
  '(package-selected-packages
    (quote
-    (virtualenv hy-mode org-jira elpy csharp-mode flycheck-ledger ledger-mode pipenv magit-todos magit-org-todos all-the-icons py-autopep8 conda ein highlight-indentation rjsx-mode indium json-mode use-package anaconda-mode yasnippet cl-lib s eclim meghanada feature-mode neotree material-theme better-defaults docker-compose-mode docker virtualenvwrapper auto-complete js2-mode web-mode php-mode eide list-packages-ext helm-dash flymake-jslint flymake-css web-beautify emmet-mode magit racket-mode org-pomodoro projectile org markdown-mode exec-path-from-shell company)))
+    (fish-mode hledger-mode flymake-ruby virtualenv hy-mode org-jira elpy csharp-mode flycheck-ledger ledger-mode pipenv magit-todos magit-org-todos all-the-icons py-autopep8 conda ein highlight-indentation rjsx-mode indium json-mode use-package anaconda-mode yasnippet cl-lib s eclim meghanada feature-mode neotree material-theme better-defaults docker-compose-mode docker virtualenvwrapper auto-complete js2-mode web-mode php-mode eide list-packages-ext helm-dash flymake-jslint flymake-css web-beautify emmet-mode magit racket-mode org-pomodoro projectile org markdown-mode exec-path-from-shell company)))
  '(scheme-program-name "mit-scheme")
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
@@ -366,32 +376,32 @@
 (add-to-list 'load-path "~/.emacs.d/lisp")
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 (add-hook 'org-mode-hook 'turn-on-font-lock)
+(add-hook 'org-mode-hook (lambda () (setq truncate-lines nil)))
 
 ;; The above is the default in recent emacs
-(setq org-directory "~/Documents/org")
+(setq org-directory "~/Dropbox/org")
 (setq org-log-done t)
-(setq initial-buffer-choice "~/Documents/org/gtd.org")
-(setq org-agenda-files (list "~/Documents/org/inbox.org"
-                             "~/Documents/org/gtd.org" 
-                             "~/Documents/org/someday.org"
-			     "~/Documents/org/tickler.org"))
-(setq org-default-notes-file "~/Documents/org/journal.org")
+(setq initial-buffer-choice "~/Dropbox/org/gtd.org")
+(setq org-agenda-files (list "~/Dropbox/org/inbox.org"
+                             "~/Dropbox/org/gtd.org" 
+			     "~/Dropbox/org/tickler.org"))
+(setq org-default-notes-file "~/Dropbox/org/journal.org")
 (setq org-capture-templates
       '(
-        ("j" "Journal" entry (file+datetree "~/Documents/org/journal.org")
+        ("j" "Journal" entry (file+datetree "~/Dropbox/org/journal.org")
          "* %?\nEntered on %U\n  %i\n  %a")
-        ("l" "Link" entry (file+headline "~/Documents/org/link.org" "Links")
+        ("l" "Link" entry (file+headline "~/Dropbox/org/link.org" "Links")
          "* %? %^L %^g \n%T" :prepend t)
-        ("c" "Capture" entry (file+headline "~/Documents/org/inbox.org" "Tasks")
+        ("c" "Capture" entry (file+headline "~/Dropbox/org/inbox.org" "Tasks")
          "* CAPTURE %i%?")
-        ("T" "Tickler" entry (file+headline "~/Documents/org/tickler.org" "Tickler")
+        ("T" "Tickler" entry (file+headline "~/Dropbox/org/tickler.org" "Tickler")
          "* %i%? \n %U")))
 
-(setq org-refile-targets '(("~/Documents/org/gtd.org" :maxlevel . 3)
-                           ("~/Documents/org/link.org" :maxlevel . 3)
-                           ("~/Documents/org/someday.org" :maxlevel . 3)
-                           ("~/Documents/org/indie.org" :maxlevel . 3)
-                           ("~/Documents/org/tickler.org" :maxlevel . 3)))
+(setq org-refile-targets '(("~/Dropbox/org/gtd.org" :maxlevel . 3)
+                           ("~/Dropbox/org/link.org" :maxlevel . 3)
+                           ("~/Dropbox/org/someday.org" :maxlevel . 3)
+                           ("~/Dropbox/org/indie.org" :maxlevel . 3)
+                           ("~/Dropbox/org/tickler.org" :maxlevel . 3)))
 
 
 ;; The following lines are always needed.  Choose your own keys.
@@ -485,11 +495,7 @@
 
 
 ;; ess
-(setq ess-smart-S-assign-key ":")
-(ess-toggle-S-assign nil)
-(ess-toggle-S-assign nil)
-(ess-toggle-underscore nil) ; leave underscore key alone!
-
+(add-to-list 'load-path "~/.emacs.d/ess/lisp")
 
 ;; emacs-ide
 ;; (eide-start)
